@@ -13,6 +13,13 @@ ToDo Einträge werden in einen Array Todo[] gespeichert.
 - Angular Materials (Button, Form, Icons, Input, ...)
 - Zusammenfassung der Aufgaben nach Status
 
+# Funktion
+- app.ts main component für todo management logik mit Angular signals über todo.service.ts
+- app.html benutzt eine Vorlage für Material UI components für input form, Filter und Aufgaben liste
+- Data layer: 
+todo.model.ts definiert todo struktur mit Id, Titel, Beschreibung, Priorität, Status (erledigt | nicht erledigt) und Erstellungsdatum 
+todo.service.ts ist der Service zur Verwaltung mit Signals, bietet CRUD Funktionen
+
 # Probleme und Verbesserungsmöglichkeiten
 - Drag and Drop ist während der bearbeitung exisiterender Tasks möglich
 - Dark Mode nicht mehr unterstützt (seit Angular Materials)
