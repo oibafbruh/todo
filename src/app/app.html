@@ -221,7 +221,7 @@
                 
                 <div class="aufgabe-content">
                   <div class="aufgabe-title-row">
-                    <h3 class="aufgabe-titel">{{ todo.titel }}</h3>
+                    <h3 class="aufgabe-titel">{{ todo.id + " - " + todo.titel }}</h3>
                     <span class="priority-badge" [ngClass]="getPriorityClass(todo.priority)">
                       {{ getPriorityLabel(todo.priority) }}
                     </span>
@@ -263,7 +263,7 @@
   </div>
 
   <footer>
-    <p>Fabio Bauer - Angular ToDo App</p>
+    <p>Fabio Bauer - Angular To Do App</p>
     <p><a href="mailto:fabio.bauer@verwaltungsmanagement.at">fabio.bauer@verwaltungsmanagement.at</a></p>
     <p>© 2025</p>
   </footer>

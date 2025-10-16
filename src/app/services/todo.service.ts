@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Todo, Priority } from '../models/todo.model';
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -29,10 +30,18 @@ export class TodoService {
       priority: 'niedrig',
       erledigt: true,
       erstelltAm: new Date(2025, 9, 13, 9, 58)
+    },
+    {
+      id: 4,
+      titel: 'Wochenmeeting beitreten',
+      beschreibung: 'Donnerstag 09:00 - 09:45',
+      priority: 'mittel',
+      erledigt: false,
+      erstelltAm: new Date(2025, 9, 15, 17, 8)
     }
   ]);
-
-  private nextId = 4; 
+  
+  private nextId = 5; //Problem 
 
   getTodos() {
     return this.todos.asReadonly();
@@ -74,3 +83,4 @@ export class TodoService {
     this.todos.set(reorderedTodos);
   }
 }
+

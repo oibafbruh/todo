@@ -34,18 +34,18 @@ import { Todo, Priority } from './models/todo.model';
 export class App {
   title = signal('Angular To-Do App');
   
-  // Form data for new todo
+  //New todo
   neuerTitel = '';
   neueBeschreibung = '';
   neuePriority: Priority = 'mittel';
   
-  // Edit mode
+  // edit todo
   bearbeitenId: number | null = null;
   bearbeitenTitel = '';
   bearbeitenBeschreibung = '';
   bearbeitenPriority: Priority = 'mittel';
 
-  // Filters
+  // filter by status and prioprity
   filterStatus = signal<'alle' | 'offen' | 'erledigt'>('alle');
   filterPriority = signal<Priority | 'alle'>('alle');
 
