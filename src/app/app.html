@@ -28,7 +28,7 @@
             <mat-label>Titel</mat-label>
             <input 
               matInput 
-              [(ngModel)]="neuerTitel"
+              [(ngModel)]="neuerTitel" required
               placeholder="z.B. ToDo App in Angular erstellen"
               (keyup.enter)="hinzufuegen()"
             />
