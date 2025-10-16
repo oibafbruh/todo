@@ -1,6 +1,8 @@
 # Angular To-Do App
 Für die Einführung in Angular.
 
+!./public/screenshot.png[1]
+
 # Speicher
 ToDo Einträge werden in einen Array Todo[] gespeichert.
 
