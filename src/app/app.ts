@@ -38,9 +38,20 @@ import { Todo, Priority } from './models/todo.model';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
+
 export class App {
   title = signal('Angular To-Do App');
   
+  //constructor(protected todoService: TodoService){
+  //  this.setDefaultDate();
+  //}
+
+  //setDefaultDate(){
+  //  const nextWeek = new Date();
+  //  nextWeek.setDate(today.getDate()+7);
+  //  this.neueendeAm = nextWeek;
+  //}
+
   //New todo
   neuerTitel = '';
   neueBeschreibung = '';
