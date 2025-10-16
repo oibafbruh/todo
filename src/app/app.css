@@ -169,7 +169,8 @@ mat-form-field {
 }
 
 mat-form-field.flex-1 {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 100px;
 }
 
 mat-form-field.flex-2 {
@@ -177,7 +178,8 @@ mat-form-field.flex-2 {
 }
 
 mat-form-field.full-width {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 150px;
 }
 
 /* Material Chips for Filters */
@@ -238,7 +240,8 @@ button mat-icon {
 /* Forms */
 .form-row {
   display: flex;
-  gap: 16px;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 0;
 }
 

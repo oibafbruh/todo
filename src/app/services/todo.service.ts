@@ -1,6 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 import { Todo, Priority } from '../models/todo.model';
 
+const now = new Date();
+const nextWeek = new Date(now);
+nextWeek.setDate(now.getDate()+7);
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +16,8 @@ export class TodoService {
       beschreibung: 'Das ist eine Aufgabe mit hoher Priorität',
       priority: 'hoch',
       erledigt: false,
-      erstelltAm: new Date(2025, 9, 16, 16, 12)
+      erstelltAm: new Date(2025, 9, 16, 16, 12),
+      endeAm: new Date(2025, 9, 30, 15, 32)
     },
     {
       id: 2,
@@ -21,7 +25,8 @@ export class TodoService {
       beschreibung: 'Subnetze zwischen Containern und Traefik Proxy',
       priority: 'mittel',
       erledigt: false,
-      erstelltAm: new Date(2025, 9, 15, 15, 32)
+      erstelltAm: new Date(2025, 9, 15, 15, 32),
+      endeAm: new Date(2025, 9, 30, 15, 32)
     },
     {
       id: 3,
@@ -29,7 +34,8 @@ export class TodoService {
       beschreibung: 'Hello World und Häuser App',
       priority: 'niedrig',
       erledigt: true,
-      erstelltAm: new Date(2025, 9, 13, 9, 58)
+      erstelltAm: new Date(2025, 9, 13, 9, 58),
+      endeAm: new Date(2025, 9, 30, 15, 32)
     },
     {
       id: 4,
@@ -37,7 +43,8 @@ export class TodoService {
       beschreibung: 'Donnerstag 09:00 - 09:45',
       priority: 'mittel',
       erledigt: false,
-      erstelltAm: new Date(2025, 9, 15, 17, 8)
+      erstelltAm: new Date(2025, 9, 15, 17, 8),
+      endeAm: new Date(2025, 9, 30, 15, 32)
     }
   ]);
   
@@ -54,15 +61,16 @@ export class TodoService {
       beschreibung,
       priority,
       erledigt: false,
-      erstelltAm: new Date()
+      erstelltAm: new Date(),
+      endeAm: nextWeek
     };
     this.todos.update(todos => [...todos, neuesToDo]);
   }
 
-  updateTodo(id: number, titel: string, beschreibung: string, priority: Priority): void {
+  updateTodo(id: number, titel: string, beschreibung: string, priority: Priority, endeAm: Date): void {
     this.todos.update(todos =>
       todos.map(todo =>
-        todo.id === id ? { ...todo, titel, beschreibung, priority } : todo
+        todo.id === id ? { ...todo, titel, beschreibung, priority, endeAm } : todo
       )
     );
   }

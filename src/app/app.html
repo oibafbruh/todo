@@ -24,7 +24,6 @@
         <h3>Neue Aufgabe erstellen</h3>
       </div>
       <div class="card-body">
-        <div class="form-row">
           <mat-form-field appearance="outline" class="flex-2">
             <mat-label>Titel</mat-label>
             <input 
@@ -34,7 +33,17 @@
               (keyup.enter)="hinzufuegen()"
             />
           </mat-form-field>
-          
+                
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Beschreibung</mat-label>
+          <textarea 
+            matInput 
+            [(ngModel)]="neueBeschreibung"
+            placeholder="Beschreibung der Aufgabe (optional)"
+            rows="3"
+          ></textarea>
+        </mat-form-field>
+        <div class="row">
           <mat-form-field appearance="outline" class="flex-1">
             <mat-label>Priorität</mat-label>
             <mat-select [(ngModel)]="neuePriority">
@@ -43,17 +52,16 @@
               <mat-option value="hoch">Hoch</mat-option>
             </mat-select>
           </mat-form-field>
+
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Enddatum</mat-label>
+            <input matInput [matDatepicker]="picker" [(ngModel)]="neueendeAm" />
+            <mat-hint>MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
         </div>
-        
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Beschreibung</mat-label>
-          <textarea 
-            matInput 
-            [(ngModel)]="neueBeschreibung"
-            placeholder="Beschreibung der Aufgabe (optional)"
-            rows="2"
-          ></textarea>
-        </mat-form-field>
+
         
         <div class="form-actions">
           <button mat-raised-button color="primary" (click)="hinzufuegen()">

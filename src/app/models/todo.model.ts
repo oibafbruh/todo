@@ -7,4 +7,5 @@ export interface Todo {
   priority: Priority;
   erledigt: boolean;
   erstelltAm: Date;
+  endeAm: Date;
 }

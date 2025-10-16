@@ -10,6 +10,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule, NativeDateAdapter, provideNativeDateAdapter } from '@angular/material/core';
 import { TodoService } from './services/todo.service';
 import { Todo, Priority } from './models/todo.model';
 
@@ -26,7 +28,12 @@ import { Todo, Priority } from './models/todo.model';
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+  ],
+  providers: [
+    provideNativeDateAdapter()
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -38,12 +45,14 @@ export class App {
   neuerTitel = '';
   neueBeschreibung = '';
   neuePriority: Priority = 'mittel';
+  neueendeAm = new Date();
   
   // edit todo
   bearbeitenId: number | null = null;
   bearbeitenTitel = '';
   bearbeitenBeschreibung = '';
   bearbeitenPriority: Priority = 'mittel';
+  bearbeitenendeAm = new Date();
 
   // filter by status and prioprity
   filterStatus = signal<'alle' | 'offen' | 'erledigt'>('alle');
@@ -94,6 +103,7 @@ export class App {
     this.bearbeitenTitel = todo.titel;
     this.bearbeitenBeschreibung = todo.beschreibung;
     this.bearbeitenPriority = todo.priority;
+    this.bearbeitenendeAm = todo.endeAm;
   }
 
   speichern(): void {
@@ -102,7 +112,8 @@ export class App {
         this.bearbeitenId,
         this.bearbeitenTitel.trim(),
         this.bearbeitenBeschreibung.trim(),
-        this.bearbeitenPriority
+        this.bearbeitenPriority,
+        this.bearbeitenendeAm
       );
       this.abbrechenBearbeiten();
     }
