@@ -9,6 +9,7 @@ ToDo Einträge werden in einen Array Todo[] gespeichert.
 
 # Features
 - Volle CRUD Funktionen
+- Responsive auch für Mobilgeräte
 - Filter nach Priorität und Status
 - Manuelles sortieren der Aufgaben mit Drag & Drop (@angular/cdk/drag-drop)
 - Angular Materials (Button, Form, Icons, Input, ...)
