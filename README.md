@@ -20,7 +20,7 @@ ToDo Einträge werden in einen Array Todo[] gespeichert.
 todo.model.ts definiert todo struktur mit Id, Titel, Beschreibung, Priorität, Status (erledigt | nicht erledigt) und Erstellungsdatum - todo.service.ts ist der Service zur Verwaltung mit Signals, bietet CRUD Funktionen
 
 # Probleme und Verbesserungsmöglichkeiten
-- Drag and Drop ist während der bearbeitung exisiterender Tasks möglich
+- Drag and Drop ist während der Bearbeitung exisiterender Tasks möglich
 - Dark Mode nicht mehr unterstützt (seit Angular Materials)
 - Todo ID nicht konsistent
 - Footer Hintergrund erzeugt visuelle Fehler
