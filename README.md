@@ -12,14 +12,14 @@ ToDo Einträge werden in einen Array Todo[] gespeichert.
 - Responsive auch für Mobilgeräte
 - Filter nach Priorität und Status
 - Manuelles sortieren der Aufgaben mit Drag & Drop (@angular/cdk/drag-drop)
-- Angular Materials (Button, Form, Icons, Input, ...)
+- Angular Materials (Button, Form, Icons, Input, DateSelector ...)
 - Zusammenfassung der Aufgaben nach Status
 
 # Funktion
 - app.ts main component für todo management logik mit Angular signals über todo.service.ts
 - app.html benutzt eine Vorlage für Material UI components für input form, Filter und Aufgaben liste
 - Data layer: 
-todo.model.ts definiert todo struktur mit Id, Titel, Beschreibung, Priorität, Status (erledigt | nicht erledigt) und Erstellungsdatum - todo.service.ts ist der Service zur Verwaltung mit Signals, bietet CRUD Funktionen
+todo.model.ts definiert todo struktur mit Id, Titel, Beschreibung, Priorität, Status (erledigt | nicht erledigt), Erstellungsdatum und Enddatum - todo.service.ts ist der Service zur Verwaltung mit Signals, bietet CRUD Funktionen
 
 # Probleme und Verbesserungsmöglichkeiten
 - Drag and Drop ist während der Bearbeitung exisiterender Tasks möglich
