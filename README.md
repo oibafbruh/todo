@@ -23,9 +23,7 @@ todo.model.ts definiert todo struktur mit Id, Titel, Beschreibung, Priorität, S
 
 # Probleme und Verbesserungsmöglichkeiten
 - Drag and Drop ist während der Bearbeitung exisiterender Tasks möglich
-- Dark Mode nicht mehr unterstützt (seit Angular Materials)
 - Todo ID nicht konsistent
-- Footer Hintergrund erzeugt visuelle Fehler
 - Allgemeine UI/CSS Verbesserungen notwendig
 - Idee: Sortierung von Tasks nach Eigenschaften und Suchfeld
 - Datenbank hinzufügen
