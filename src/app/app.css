@@ -35,30 +35,6 @@
   background: var(--bg-primary);
 }
 
-/* Dark Mode */
-@media (prefers-color-scheme: dark) {
-  :host {
-    --text-primary: #ffffff;
-    --text-secondary: #d2d0ce;
-    --text-tertiary: #a19f9d;
-    --text-disabled: #797775;
-    
-    --bg-primary: #1b1a19;
-    --bg-secondary: #252423;
-    --bg-white: #292827;
-    
-    --border-color: #3b3a39;
-    --border-hover: #605e5c;
-    
-    --primary-light: #004578;
-    --success-light: #094509;
-    --warning-light: #6c4100;
-    --danger-light: #6e0811;
-    
-    --shadow-sm: 0 1.6px 3.6px rgba(0, 0, 0, 0.4), 0 0.3px 0.9px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 3.2px 7.2px rgba(0, 0, 0, 0.4), 0 0.6px 1.8px rgba(0, 0, 0, 0.3);
-  }
-}
 
 .container {
   max-width: 1200px;

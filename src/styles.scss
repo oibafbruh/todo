@@ -1,0 +1,14 @@
+/* Remove any prebuilt theme imports like:
+   @import '@angular/material/prebuilt-themes/...';
+*/
+
+@use '@angular/material' as mat;
+
+/* Apply it to all Material components */
+@include mat.core();
+
+/* Optional: set page background */
+html, body {
+  background-color: #ffffff;
+  color: #000000;
+}

@@ -42,9 +42,9 @@ import { Todo, Priority } from './models/todo.model';
 export class App {
   title = signal('Angular To-Do App');
   
-  //constructor(protected todoService: TodoService){
-  //  this.setDefaultDate();
-  //}
+  constructor(protected todoService: TodoService){  
+    //this.setDefaultDate();
+  }
 
   //setDefaultDate(){
   //  const nextWeek = new Date();
@@ -68,8 +68,6 @@ export class App {
   // filter by status and prioprity
   filterStatus = signal<'alle' | 'offen' | 'erledigt'>('alle');
   filterPriority = signal<Priority | 'alle'>('alle');
-
-  constructor(protected todoService: TodoService) {}
 
   get todos() {
     return this.todoService.getTodos();
