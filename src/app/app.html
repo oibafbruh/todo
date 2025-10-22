@@ -1,31 +1,13 @@
 
-<div class="container">
-  <app-header-stats
-    [total]="(totalCount$ | async) || 0"
-    [open]="(openCount$ | async) || 0"
-    [done]="(doneCount$ | async) || 0"
-  ></app-header-stats>
-
-  <main class="main-content">
-    <app-new-todo-form (create)="handleCreate($event)"></app-new-todo-form>
-
-    <app-filter-bar
-      [status]="status$.value"
-      [priority]="priority$.value"
-      (statusChange)="status$.next($event)"
-      (priorityChange)="priority$.next($event)"
-    ></app-filter-bar>
-
-    <app-search-bar (search)="search$.next($event)"></app-search-bar>
-
-    <app-todo-list
-      [todos]="filteredTodos$ | async"
-      (reorder)="handleReorder($event)"
-      (toggle)="handleToggle($event)"
-      (save)="handleSave($event)"
-      (delete)="handleDelete($event)"
-    ></app-todo-list>
-  </main>
+<div class="app-container">
+  <!-- Modern Todo Layout -->
+  <app-modern-todo-layout
+    [todos$]="todos$"
+    (create)="handleCreate($event)"
+    (update)="handleUpdate($event)"
+    (toggle)="handleToggle($event)"
+    (delete)="handleDelete($event)">
+  </app-modern-todo-layout>
 </div>
 
 <footer>
@@ -34,4 +16,4 @@
   <p>© 2025</p>
 </footer>
 
-<router-outlet />
+<router-outlet></router-outlet>

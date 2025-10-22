@@ -7,6 +7,167 @@
 /* Apply it to all Material components */
 @include mat.core();
 
+// Use prebuilt Material themes with custom overrides
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+// Custom Material Design 3 styles
+:root {
+  // Material Design 3 spacing tokens (8dp grid)
+  --md-sys-spacing-xs: 4px;
+  --md-sys-spacing-sm: 8px;
+  --md-sys-spacing-md: 16px;
+  --md-sys-spacing-lg: 24px;
+  --md-sys-spacing-xl: 32px;
+  --md-sys-spacing-xxl: 48px;
+
+  // Material Design 3 elevation tokens
+  --md-sys-elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-4: 0px 2px 3px 0px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-5: 0px 4px 4px 0px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
+
+  // Material Design 3 shape tokens
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+
+  // Priority color tokens
+  --priority-high: #f44336;
+  --priority-medium: #ff9800;
+  --priority-low: #4caf50;
+  
+  --priority-high-container: #ffebee;
+  --priority-medium-container: #fff3e0;
+  --priority-low-container: #e8f5e8;
+}
+
+// Global Material Design 3 styles
+.mat-mdc-card {
+  border-radius: var(--md-sys-shape-corner-large) !important;
+  box-shadow: var(--md-sys-elevation-2) !important;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.mat-mdc-card:hover {
+  box-shadow: var(--md-sys-elevation-3) !important;
+}
+
+.mat-mdc-button {
+  border-radius: var(--md-sys-shape-corner-large) !important;
+}
+
+.mat-mdc-fab {
+  border-radius: var(--md-sys-shape-corner-extra-large) !important;
+}
+
+.mat-mdc-form-field {
+  .mat-mdc-form-field-outline {
+    border-radius: var(--md-sys-shape-corner-medium) !important;
+  }
+}
+
+// Priority badge styles
+.priority-badge {
+  border-radius: var(--md-sys-shape-corner-large) !important;
+  padding: var(--md-sys-spacing-xs) var(--md-sys-spacing-sm);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.priority-high {
+  background-color: var(--priority-high-container);
+  color: var(--priority-high);
+}
+
+.priority-medium {
+  background-color: var(--priority-medium-container);
+  color: var(--priority-medium);
+}
+
+.priority-low {
+  background-color: var(--priority-low-container);
+  color: var(--priority-low);
+}
+
+// Typography scale
+.headline-medium {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: 0;
+}
+
+.title-medium {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0.15px;
+}
+
+.body-medium {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+}
+
+.label-small {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+}
+
+// Responsive grid
+.todo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--md-sys-spacing-lg);
+  padding: var(--md-sys-spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .todo-grid {
+    grid-template-columns: 1fr;
+    gap: var(--md-sys-spacing-md);
+    padding: var(--md-sys-spacing-md);
+  }
+}
+
+// Animation utilities
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
 /* Global CSS Variables */
 :root {
   /* Color Variables */

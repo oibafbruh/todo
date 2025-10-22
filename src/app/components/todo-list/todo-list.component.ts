@@ -17,19 +17,30 @@ import { TodoItemComponent } from '../todo-item/todo-item.component';
         </h2>
       </div>
 
-      <div cdkDropList [cdkDropListLockAxis]="'y'" [cdkDropListAutoScrollStep]="2" (cdkDropListDropped)="onDrop($event)" class="todo-list">
-        <ng-container *ngIf="todos?.length; else empty">
-          <ng-container *ngFor="let todo of todos; trackBy: trackById">
-            <app-todo-item 
+      <div
+        cdkDropList
+        [cdkDropListLockAxis]="'y'"
+        [cdkDropListAutoScrollStep]="2"
+        (cdkDropListDropped)="onDrop($event)"
+        class="todo-list"
+      >
+        @if (todos?.length) {
+          @for (todo of todos; track todo.id) {
+            <app-todo-item
               [todo]="todo"
               (toggle)="toggle.emit($event)"
               (save)="save.emit($event)"
               (cancel)="cancel.emit()"
               (delete)="delete.emit($event)">
             </app-todo-item>
-          </ng-container>
-        </ng-container>
+          }
+        } @else {
+          <ng-template #empty>
+            <p>No todos yet!</p>
+          </ng-template>
+        }
       </div>
+
 
       <ng-template #empty>
         <div class="empty-state">

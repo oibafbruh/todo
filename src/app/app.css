@@ -1,1 +1,75 @@
-/* App component specific styles - most styles moved to global styles.scss */
+/* App component specific styles - Material Design 3 layout */
+
+.app-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Global Material Design 3 enhancements */
+.mat-mdc-card {
+  border-radius: var(--md-sys-shape-corner-large) !important;
+  box-shadow: var(--md-sys-elevation-2) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mat-mdc-card:hover {
+  box-shadow: var(--md-sys-elevation-3) !important;
+}
+
+.mat-mdc-button {
+  border-radius: var(--md-sys-shape-corner-large) !important;
+  font-weight: 500;
+}
+
+.mat-mdc-fab {
+  border-radius: var(--md-sys-shape-corner-extra-large) !important;
+  box-shadow: var(--md-sys-elevation-3) !important;
+}
+
+.mat-mdc-form-field {
+  .mat-mdc-form-field-outline {
+    border-radius: var(--md-sys-shape-corner-medium) !important;
+  }
+}
+
+/* Typography enhancements */
+.headline-medium {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: 0;
+}
+
+.title-medium {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0.15px;
+}
+
+.body-medium {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+}
+
+.label-small {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .app-container {
+    min-height: 100vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container {
+    min-height: 100vh;
+  }
+}

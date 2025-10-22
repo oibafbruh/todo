@@ -1,154 +1,76 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
+// Removed unused Material imports for sidenav, buttons, icons, toolbar, and tooltips
+import { FormsModule } from '@angular/forms';
+import { map } from 'rxjs';
+
 import { TodoService } from './services/todo.service';
 import { Todo, Priority } from './models/todo.model';
-import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map } from 'rxjs';
-import { toObservable } from '@angular/core/rxjs-interop';
-import { HeaderStatsComponent } from './components/header-stats/header-stats.component';
-import { NewTodoFormComponent } from './components/new-todo-form/new-todo-form.component';
-import { FilterBarComponent } from './components/filter-bar/filter-bar.component';
-import { SearchBarComponent } from './components/search-bar/search-bar.component';
-import { TodoListComponent } from './components/todo-list/todo-list.component';
+import { ModernTodoLayoutComponent } from './components/modern-todo-layout/modern-todo-layout.component';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     MatNativeDateModule,
-    HeaderStatsComponent,
-    NewTodoFormComponent,
-    FilterBarComponent,
-    SearchBarComponent,
-    TodoListComponent,
+    ModernTodoLayoutComponent,
     RouterOutlet
   ],
-  providers: [
-    provideNativeDateAdapter()
-  ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrls: ['./app.css']
 })
-
 export class App {
-  // Title kept as a signal (used by header component to render heading text if desired)
-  title = signal('Angular To-Do App');
-  
-  // BehaviorSubjects represent UI state: filters and search term
-  status$ = new BehaviorSubject<'alle'|'offen'|'erledigt'>('alle');
-  priority$ = new BehaviorSubject<Priority|'alle'>('alle');
-  search$ = new BehaviorSubject<string>('');
+  // Removed old filter subjects as they're now handled by the enhanced table component
 
-  // Convert the service's todos signal to an observable for RxJS composition
-  todos$!: ReturnType<typeof toObservable<Todo[]>>;
+  todos$;
+  totalCount$;
+  openCount$;
+  doneCount$;
 
-  // These will be initialized in the constructor after todos$ is available
-  searchDebounced$!: any;
-  filteredTodos$!: any;
-  totalCount$!: any;
-  openCount$!: any;
-  doneCount$!: any;
-
-  constructor(protected todoService: TodoService) {
-    // Initialize todos$ after service is available
-    this.todos$ = toObservable(this.todoService.getTodos()) as ReturnType<typeof toObservable<Todo[]>>;
+  constructor(private todoService: TodoService) {
+    // Initialize todos observable
+    this.todos$ = this.todoService.getTodos();
     
-    // Initialize derived observables after todos$ is available
-    this.searchDebounced$ = this.search$.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    );
-
-    // Combine todos with filters and search into one derived stream powering the list
-    this.filteredTodos$ = combineLatest([
-      this.todos$,
-      this.status$,
-      this.priority$,
-      this.searchDebounced$
-    ]).pipe(
-      map((data: any) => {
-        const [todos, status, priority, term] = data;
-        const q = term.trim().toLowerCase();
-        let res = todos;
-        if (status === 'offen') res = res.filter((t: Todo) => !t.erledigt);
-        else if (status === 'erledigt') res = res.filter((t: Todo) => t.erledigt);
-        if (priority !== 'alle') res = res.filter((t: Todo) => t.priority === priority);
-        if (q) {
-          res = res.filter((t: Todo) =>
-            t.titel.toLowerCase().includes(q) ||
-            t.beschreibung.toLowerCase().includes(q)
-          );
-        }
-        return res;
-      })
-    );
-
-    // Derived counters for header stats
-    this.totalCount$ = this.todos$.pipe(map((t: Todo[]) => t.length));
-    this.openCount$ = this.todos$.pipe(map((t: Todo[]) => t.filter((x: Todo) => !x.erledigt).length));
-    this.doneCount$ = this.todos$.pipe(map((t: Todo[]) => t.filter((x: Todo) => x.erledigt).length));
+    // Calculate statistics for header
+    this.totalCount$ = this.todos$.pipe(map(t => t.length));
+    this.openCount$ = this.todos$.pipe(map(t => t.filter(x => !x.erledigt).length));
+    this.doneCount$ = this.todos$.pipe(map(t => t.filter(x => x.erledigt).length));
   }
 
-  // Handlers called by child components (pure orchestration)
+  /**
+   * Handles todo creation from the enhanced table component
+   */
   handleCreate(evt: { titel: string; beschreibung: string; priority: Priority; endeAm: Date }) {
-    this.todoService.addTodo(evt.titel.trim(), (evt.beschreibung || '').trim(), evt.priority);
-    // Extend addTodo if you want to store endeAm from evt
+    console.log('Creating new todo:', evt);
+    this.todoService.addTodo(evt.titel.trim(), evt.beschreibung.trim(), evt.priority);
   }
 
-  handleReorder(reordered: Todo[]) {
-    this.todoService.reorderTodos(reordered);
+  /**
+   * Handles todo updates from the enhanced table component
+   */
+  handleUpdate(evt: Todo) {
+    console.log('Updating todo:', evt);
+    this.todoService.updateTodo(evt.id, evt.titel.trim(), evt.beschreibung.trim(), evt.priority, evt.endeAm);
   }
 
+  /**
+   * Handles todo status toggle from the enhanced table component
+   */
   handleToggle(id: number) {
+    console.log('Toggling todo status:', id);
     this.todoService.toggleErledigt(id);
   }
 
-  handleSave({ id, titel, beschreibung, priority, endeAm }: { id: number; titel: string; beschreibung: string; priority: Priority; endeAm: Date }) {
-    this.todoService.updateTodo(id, titel.trim(), (beschreibung || '').trim(), priority, endeAm);
-  }
-
+  /**
+   * Handles todo deletion from the enhanced table component
+   */
   handleDelete(id: number) {
+    console.log('Deleting todo:', id);
     this.todoService.deleteTodo(id);
   }
 }
-
-// import { Component, signal, computed } from '@angular/core';
-// import { bootstrapApplication } from '@angular/platform-browser';
-// import { FormsModule } from '@angular/forms';
-
-// @Component({
-//   selector: 'app-root',
-//   standalone: true,
-//   imports: [FormsModule],
-//   template: `
-//     <h2>Cookie recipe</h2>
-
-//     <label>
-//       # of cookies:
-//       <input type="range"
-//              min="10"
-//              max="100"
-//              step="10"
-//              [ngModel]="count()"
-//              (ngModelChange)="count.set($event)" />
-//       {{ count() }}
-//     </label>
-
-//     <p>Butter: {{ butter() }} cup(s)</p>
-//     <p>Sugar: {{ sugar() }} cup(s)</p>
-//     <p>Flour: {{ flour() }} cup(s)</p>
-//   `,
-// })
-// export class CookieRecipe {
-//   readonly count = signal(10);
-
-//   readonly butter = computed(() => this.count() * 0.1);
-//   readonly sugar = computed(() => this.count() * 0.05);
-//   readonly flour = computed(() => this.count() * 0.2);
-// }
-
-// bootstrapApplication(CookieRecipe);
-

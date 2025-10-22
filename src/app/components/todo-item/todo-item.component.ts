@@ -106,7 +106,7 @@ export class TodoItemComponent {
   form!: FormGroup;
 
   constructor(private fb: FormBuilder) {
-    // Initialize form after FormBuilder is available
+    // FormBuilder init
     this.form = this.fb.group({
       titel: ['', [Validators.required, Validators.minLength(1)]],
       beschreibung: [''],
@@ -116,7 +116,7 @@ export class TodoItemComponent {
 
     this.form.statusChanges.subscribe(status => {
       if (status === 'INVALID') {
-        console.group('🔴 Edit Todo Form Errors');
+        console.group('Edit Todo Form Errors');
         Object.entries(this.form.controls).forEach(([k, c]) => { if (c.errors) console.error(`${k}:`, c.errors); });
         console.groupEnd();
       }

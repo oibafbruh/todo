@@ -27,11 +27,11 @@ import { MatIconModule } from '@angular/material/icon';
   `
 })
 export class HeaderStatsComponent {
-  // Total number of todos provided by the container
+  // Total 
   @Input() total: number | null = 0;
-  // Number of open todos provided by the container
+  // Offen
   @Input() open: number | null = 0;
-  // Number of completed todos provided by the container
+  // Erledigt
   @Input() done: number | null = 0;
 }
 

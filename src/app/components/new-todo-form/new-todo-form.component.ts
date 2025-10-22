@@ -67,11 +67,10 @@ import { MatNativeDateModule } from '@angular/material/core';
 export class NewTodoFormComponent {
   @Output() create = new EventEmitter<{ titel: string; beschreibung: string; priority: 'niedrig'|'mittel'|'hoch'; endeAm: Date }>();
 
-  // Reactive form holding new todo values; validators ensure title is provided.
   form!: FormGroup;
 
   constructor(private fb: FormBuilder) {
-    // Initialize form after FormBuilder is available
+    // Form Builder init
     this.form = this.fb.group({
       titel: ['', [Validators.required, Validators.minLength(1)]],
       beschreibung: [''],
@@ -79,13 +78,14 @@ export class NewTodoFormComponent {
       endeAm: [this.defaultDueDate(), [Validators.required]]
     });
 
-    // Console-log validation errors reactively to support learning
+    // Validierungfehler zur Console
     this.form.statusChanges.subscribe(status => {
       if (status === 'INVALID') {
-        console.group('🔴 New Todo Form Errors');
+        console.group('New Todo Form Errors');
         Object.entries(this.form.controls).forEach(([key, ctrl]) => {
           if (ctrl.errors) console.error(`${key}:`, ctrl.errors);
         });
+        console.log("I am an error!");
         console.groupEnd();
       }
     });
