@@ -56,8 +56,14 @@ export class App {
   neuerTitel = '';
   neueBeschreibung = '';
   neuePriority: Priority = 'mittel';
-  neueendeAm = new Date();
+  neueendeAm: Date = new Date(new Date().setDate(new Date().getDate() + 7)); //Setzt das Enddatum auf heute in einer Woche...
   
+  // neueendeAm = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  
+  
+  //Mit Form Control 
+  // endDate = new FormControl(new Date(new Date().setDate(new Date().getDate() + 7))); 
+
   // edit todo
   bearbeitenId: number | null = null;
   bearbeitenTitel = '';
@@ -173,3 +179,41 @@ export class App {
     this.todoService.reorderTodos(todos);
   }
 }
+
+// import { Component, signal, computed } from '@angular/core';
+// import { bootstrapApplication } from '@angular/platform-browser';
+// import { FormsModule } from '@angular/forms';
+
+// @Component({
+//   selector: 'app-root',
+//   standalone: true,
+//   imports: [FormsModule],
+//   template: `
+//     <h2>Cookie recipe</h2>
+
+//     <label>
+//       # of cookies:
+//       <input type="range"
+//              min="10"
+//              max="100"
+//              step="10"
+//              [ngModel]="count()"
+//              (ngModelChange)="count.set($event)" />
+//       {{ count() }}
+//     </label>
+
+//     <p>Butter: {{ butter() }} cup(s)</p>
+//     <p>Sugar: {{ sugar() }} cup(s)</p>
+//     <p>Flour: {{ flour() }} cup(s)</p>
+//   `,
+// })
+// export class CookieRecipe {
+//   readonly count = signal(10);
+
+//   readonly butter = computed(() => this.count() * 0.1);
+//   readonly sugar = computed(() => this.count() * 0.05);
+//   readonly flour = computed(() => this.count() * 0.2);
+// }
+
+// bootstrapApplication(CookieRecipe);
+

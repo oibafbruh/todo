@@ -1,3 +1,4 @@
+
 <div class="container">
   <header class="header">
     <h1><mat-icon>check_box</mat-icon> {{ title() }}</h1>
@@ -196,6 +197,14 @@
                   [(ngModel)]="bearbeitenBeschreibung"
                   rows="2"
                 ></textarea>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="flex-1">
+                <mat-label>Enddatum</mat-label>
+                <input matInput [matDatepicker]="picker" [(ngModel)]="neueendeAm" />
+                <mat-hint>MM/DD/YYYY</mat-hint>
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
               </mat-form-field>
               
               <div class="form-actions">
