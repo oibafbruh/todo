@@ -9,13 +9,6 @@
       
       <div class="toolbar-right">
         <button mat-icon-button 
-                (click)="toggleFilters()"
-                matTooltip="Filter umschalten"
-                [class.active]="showFilters">
-          <mat-icon>{{ showFilters ? 'filter_list_off' : 'filter_list' }}</mat-icon>
-        </button>
-        
-        <button mat-icon-button 
                 [matMenuTriggerFor]="sortMenu"
                 matTooltip="Sortieren">
           <mat-icon>sort</mat-icon>
@@ -42,140 +35,164 @@
     </div>
   </mat-toolbar>
 
-  <!-- Filter Panel -->
-  <div class="filter-panel" [class.expanded]="showFilters">
+  <!-- Filters Bar (always visible) -->
+  <div class="filters-bar">
     <div class="filter-content">
       <!-- Search -->
-      <mat-form-field appearance="outline" class="search-field">
-        <mat-label>Suche in Todos</mat-label>
-        <input matInput 
-               [(ngModel)]="currentFilter.search" 
-               (input)="onSearchChange($event)"
-               placeholder="Titel, Beschreibung oder ID...">
-        <mat-icon matPrefix>search</mat-icon>
-        <button mat-icon-button 
-                matSuffix 
-                *ngIf="currentFilter.search"
-                (click)="clearSearch()"
-                matTooltip="Suche löschen">
-          <mat-icon>clear</mat-icon>
-        </button>
-      </mat-form-field>
+      <div class="filter-item filter-search">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Suche in Todos</mat-label>
+          <input matInput 
+                 [(ngModel)]="currentFilter.search" 
+                 (input)="onSearchChange($event)"
+                 placeholder="Titel, Beschreibung oder ID...">
+          <mat-icon matPrefix>search</mat-icon>
+          @if (currentFilter.search) {
+            <button mat-icon-button 
+                    matSuffix 
+                    (click)="clearSearch()"
+                    matTooltip="Suche löschen">
+              <mat-icon>clear</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+      </div>
 
-      <!-- Status Filter Chips -->
-      <div class="filter-chips">
-        <mat-chip-set>
-          <mat-chip 
-            [class.selected]="currentFilter.status === 'alle'"
-            (click)="setStatusFilter('alle')"
-            matTooltip="Alle Todos anzeigen">
-            <mat-icon matChipAvatar>list</mat-icon>
-            Alle
-          </mat-chip>
-          <mat-chip 
-            [class.selected]="currentFilter.status === 'offen'"
-            (click)="setStatusFilter('offen')"
-            matTooltip="Nur offene Todos">
-            <mat-icon matChipAvatar>pending</mat-icon>
-            Offen
-          </mat-chip>
-          <mat-chip 
-            [class.selected]="currentFilter.status === 'erledigt'"
-            (click)="setStatusFilter('erledigt')"
-            matTooltip="Nur erledigte Todos">
-            <mat-icon matChipAvatar>check_circle</mat-icon>
-            Erledigt
-          </mat-chip>
-        </mat-chip-set>
+      <!-- Status Filter (Dropdown) -->
+      <div class="filter-item filter-status">
+        <mat-form-field appearance="outline" class="status-field">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="currentFilter.status" (selectionChange)="onFilterChange()">
+            <mat-option value="alle">Alle</mat-option>
+            <mat-option value="offen">Offen</mat-option>
+            <mat-option value="erledigt">Erledigt</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>checklist</mat-icon>
+        </mat-form-field>
       </div>
 
       <!-- Priority Filter -->
-      <mat-form-field appearance="outline" class="priority-field">
-        <mat-label>Priorität</mat-label>
-        <mat-select [(ngModel)]="currentFilter.priority" (selectionChange)="onFilterChange()">
-          <mat-option value="alle">Alle Prioritäten</mat-option>
-          <mat-option value="niedrig">Niedrig</mat-option>
-          <mat-option value="mittel">Mittel</mat-option>
-          <mat-option value="hoch">Hoch</mat-option>
-        </mat-select>
-        <mat-icon matPrefix>flag</mat-icon>
-      </mat-form-field>
+      <div class="filter-item filter-priority">
+        <mat-form-field appearance="outline" class="priority-field">
+          <mat-label>Priorität</mat-label>
+          <mat-select [(ngModel)]="currentFilter.priority" (selectionChange)="onFilterChange()">
+            <mat-option value="alle">Alle</mat-option>
+            <mat-option value="niedrig">Niedrig</mat-option>
+            <mat-option value="mittel">Mittel</mat-option>
+            <mat-option value="hoch">Hoch</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>flag</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Sort By -->
+      <div class="filter-item filter-sortby">
+        <mat-form-field appearance="outline" class="sortby-field">
+          <mat-label>Sortieren nach</mat-label>
+          <mat-select [(ngModel)]="currentFilter.sortBy" (selectionChange)="onFilterChange()">
+            <mat-option value="erstelltAm">Erstellt</mat-option>
+            <mat-option value="endeAm">Fällig</mat-option>
+            <mat-option value="priority">Priorität</mat-option>
+            <mat-option value="titel">Titel</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>sort</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Sort Order -->
+      <div class="filter-item filter-sortorder">
+        <mat-form-field appearance="outline" class="sortorder-field">
+          <mat-label>Reihenfolge</mat-label>
+          <mat-select [(ngModel)]="currentFilter.sortOrder" (selectionChange)="onFilterChange()">
+            <mat-option value="asc">Aufsteigend</mat-option>
+            <mat-option value="desc">Absteigend</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>swap_vert</mat-icon>
+        </mat-form-field>
+      </div>
 
       <!-- Quick Actions -->
-      <div class="quick-actions">
+      <div class="filter-item filter-actions">
         <button mat-stroked-button 
                 (click)="clearAllFilters()"
                 [disabled]="!hasActiveFilters()"
                 class="clear-button">
           <mat-icon>clear_all</mat-icon>
-          Filter zurücksetzen
+          Zurücksetzen
         </button>
         
         <span class="results-count body-medium">
-          {{ (filteredTodos$ | async)?.length || 0 }} von {{ (todos$ | async)?.length || 0 }} Todos
+          {{ (filteredTodos$ | async)?.length || 0 }} / {{ (todos$ | async)?.length || 0 }}
         </span>
       </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading$ | async" class="loading-container">
-    <mat-spinner diameter="50"></mat-spinner>
-    <p class="body-medium">Lade Todos...</p>
-  </div>
+  @if (isLoading$ | async) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p class="body-medium">Lade Todos...</p>
+    </div>
+  }
 
   <!-- Todo Table -->
-  <div *ngIf="!(isLoading$ | async)" class="table-container">
+  @if (!(isLoading$ | async)) {
+    <div class="table-container">
     <mat-card class="table-card">
       <mat-card-content>
         <!-- New Todo Section -->
         <div class="new-todo-section">
-          <div class="new-todo-container" *ngIf="!isCreatingNew">
-            <button mat-stroked-button (click)="startCreatingNew()" class="add-new-button">
-              <mat-icon>add</mat-icon>
-              Neues Todo hinzufügen
-            </button>
-          </div>
-          
-          <div class="new-todo-form" *ngIf="isCreatingNew">
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Titel</mat-label>
-                <input matInput [(ngModel)]="newTodo.titel" placeholder="Titel eingeben">
-              </mat-form-field>
-              
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Priorität</mat-label>
-                <mat-select [(ngModel)]="newTodo.priority">
-                  <mat-option value="niedrig">Niedrig</mat-option>
-                  <mat-option value="mittel">Mittel</mat-option>
-                  <mat-option value="hoch">Hoch</mat-option>
-                </mat-select>
-              </mat-form-field>
-              
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Fälligkeitsdatum</mat-label>
-                <input matInput [matDatepicker]="picker" [(ngModel)]="newTodo.endeAm">
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </mat-form-field>
-            </div>
-            
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="form-field full-width">
-                <mat-label>Beschreibung</mat-label>
-                <textarea matInput [(ngModel)]="newTodo.beschreibung" placeholder="Beschreibung eingeben" rows="2"></textarea>
-              </mat-form-field>
-            </div>
-            
-            <div class="form-actions">
-              <button mat-button (click)="cancelCreatingNew()">Abbrechen</button>
-              <button mat-raised-button color="primary" (click)="saveNewTodo()" [disabled]="!isNewTodoValid()">
-                <mat-icon>save</mat-icon>
-                Speichern
+          @if (!isCreatingNew) {
+            <div class="new-todo-container">
+              <button mat-stroked-button (click)="startCreatingNew()" class="add-new-button">
+                <mat-icon>add</mat-icon>
+                Neues Todo hinzufügen
               </button>
             </div>
-          </div>
+          }
+          
+          @if (isCreatingNew) {
+            <div class="new-todo-form">
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Titel</mat-label>
+                  <input matInput [(ngModel)]="newTodo.titel" placeholder="Titel eingeben">
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Priorität</mat-label>
+                  <mat-select [(ngModel)]="newTodo.priority">
+                    <mat-option value="niedrig">Niedrig</mat-option>
+                    <mat-option value="mittel">Mittel</mat-option>
+                    <mat-option value="hoch">Hoch</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Fälligkeitsdatum</mat-label>
+                  <input matInput [matDatepicker]="picker" [(ngModel)]="newTodo.endeAm">
+                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+              </div>
+              
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field full-width">
+                  <mat-label>Beschreibung</mat-label>
+                  <textarea matInput [(ngModel)]="newTodo.beschreibung" placeholder="Beschreibung eingeben" rows="2"></textarea>
+                </mat-form-field>
+              </div>
+              
+              <div class="form-actions">
+                <button mat-button (click)="cancelCreatingNew()">Abbrechen</button>
+                <button mat-raised-button color="primary" (click)="saveNewTodo()" [disabled]="!isNewTodoValid()">
+                  <mat-icon>save</mat-icon>
+                  Speichern
+                </button>
+              </div>
+            </div>
+          }
         </div>
 
         <table mat-table [dataSource]="(filteredTodos$ | async) || []" class="todo-table">
@@ -206,9 +223,11 @@
             <td mat-cell *matCellDef="let todo">
               <div class="title-cell">
                 <span class="title-text" [class.completed]="todo.erledigt">{{ todo.titel }}</span>
-                <span *ngIf="isOverdue(todo)" class="overdue-indicator" matTooltip="Überfällig">
-                  <mat-icon>warning</mat-icon>
-                </span>
+                @if (isOverdue(todo)) {
+                  <span class="overdue-indicator" matTooltip="Überfällig">
+                    <mat-icon>warning</mat-icon>
+                  </span>
+                }
               </div>
             </td>
           </ng-container>
@@ -278,21 +297,24 @@
         </table>
 
         <!-- No Data State -->
-        <div *ngIf="((filteredTodos$ | async)?.length || 0) === 0" class="no-data-state">
-          <mat-icon class="no-data-icon">inbox</mat-icon>
-          <h3 class="title-medium">Keine Todos gefunden</h3>
-          <p class="body-medium">
-            {{ hasActiveFilters() ? 'Versuchen Sie, Ihre Suchkriterien zu ändern.' : 'Erstellen Sie Ihr erstes Todo, um loszulegen.' }}
-          </p>
-          <button mat-raised-button 
-                  color="primary" 
-                  (click)="startCreatingNew()"
-                  class="create-first-button">
-            <mat-icon>add</mat-icon>
-            Erstes Todo erstellen
-          </button>
-        </div>
+        @if (((filteredTodos$ | async)?.length || 0) === 0) {
+          <div class="no-data-state">
+            <mat-icon class="no-data-icon">inbox</mat-icon>
+            <h3 class="title-medium">Keine Todos gefunden</h3>
+            <p class="body-medium">
+              {{ hasActiveFilters() ? 'Versuchen Sie, Ihre Suchkriterien zu ändern.' : 'Erstellen Sie Ihr erstes Todo, um loszulegen.' }}
+            </p>
+            <button mat-raised-button 
+                    color="primary" 
+                    (click)="startCreatingNew()"
+                    class="create-first-button">
+              <mat-icon>add</mat-icon>
+              Erstes Todo erstellen
+            </button>
+          </div>
+        }
       </mat-card-content>
     </mat-card>
-  </div>
+    </div>
+  }
 </div>

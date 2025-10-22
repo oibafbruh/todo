@@ -22,8 +22,6 @@ import { FormsModule } from '@angular/forms';
 import { 
   BehaviorSubject, 
   combineLatest, 
-  debounceTime, 
-  distinctUntilChanged, 
   map, 
   Subject, 
   takeUntil, 
@@ -80,7 +78,6 @@ export class ModernTodoLayoutComponent implements OnInit, OnDestroy {
   @Output() toggle = new EventEmitter<number>();
 
   // UI State
-  showFilters = false;
   isLoading$ = new BehaviorSubject<boolean>(false);
   
   // New Todo Creation
@@ -143,27 +140,20 @@ export class ModernTodoLayoutComponent implements OnInit, OnDestroy {
 
   private applyFilters(todos: Todo[], filter: FilterState): Todo[] {
     return todos.filter(todo => {
-      // Search filter
       if (filter.search) {
-        const query = filter.search.toLowerCase();
-        const matchesSearch = 
-          todo.titel.toLowerCase().includes(query) ||
-          todo.beschreibung.toLowerCase().includes(query) ||
-          todo.id.toString().includes(query);
-        if (!matchesSearch) return false;
+        const q = filter.search.toLowerCase();
+        const matches = todo.titel.toLowerCase().includes(q) ||
+                        todo.beschreibung.toLowerCase().includes(q) ||
+                        todo.id.toString().includes(q);
+        if (!matches) return false;
       }
-
-      // Status filter
       if (filter.status !== 'alle') {
         const isCompleted = filter.status === 'erledigt';
         if (todo.erledigt !== isCompleted) return false;
       }
-
-      // Priority filter
       if (filter.priority !== 'alle') {
         if (todo.priority !== filter.priority) return false;
       }
-
       return true;
     });
   }
@@ -171,16 +161,15 @@ export class ModernTodoLayoutComponent implements OnInit, OnDestroy {
   private applySorting(todos: Todo[], filter: FilterState): Todo[] {
     return [...todos].sort((a, b) => {
       let aValue: any, bValue: any;
-
       switch (filter.sortBy) {
         case 'titel':
           aValue = a.titel.toLowerCase();
           bValue = b.titel.toLowerCase();
           break;
         case 'priority':
-          const priorityOrder = { niedrig: 1, mittel: 2, hoch: 3 };
-          aValue = priorityOrder[a.priority];
-          bValue = priorityOrder[b.priority];
+          const order = { niedrig: 1, mittel: 2, hoch: 3 } as const;
+          aValue = order[a.priority];
+          bValue = order[b.priority];
           break;
         case 'erstelltAm':
         case 'endeAm':
@@ -190,141 +179,37 @@ export class ModernTodoLayoutComponent implements OnInit, OnDestroy {
         default:
           return 0;
       }
-
       if (aValue < bValue) return filter.sortOrder === 'asc' ? -1 : 1;
       if (aValue > bValue) return filter.sortOrder === 'asc' ? 1 : -1;
       return 0;
     });
   }
 
-  // Event Handlers
-  onSearchChange(event: any): void {
-    this.currentFilter.search = event.target.value;
-    this.filterSubject.next(this.currentFilter);
-  }
+  // Filter handlers
+  onSearchChange(event: any): void { this.currentFilter.search = event.target.value; this.filterSubject.next(this.currentFilter); }
+  onFilterChange(): void { this.filterSubject.next(this.currentFilter); }
+  setStatusFilter(status: 'alle' | 'offen' | 'erledigt'): void { this.currentFilter.status = status; this.onFilterChange(); }
+  setSort(sortBy: FilterState['sortBy'], sortOrder: FilterState['sortOrder']): void { this.currentFilter.sortBy = sortBy; this.currentFilter.sortOrder = sortOrder; this.onFilterChange(); }
+  clearSearch(): void { this.currentFilter.search = ''; this.onSearchChange({ target: { value: '' } }); }
+  clearAllFilters(): void { this.currentFilter = { search: '', status: 'alle', priority: 'alle', sortBy: 'erstelltAm', sortOrder: 'desc' }; this.onFilterChange(); }
+  hasActiveFilters(): boolean { return this.currentFilter.search !== '' || this.currentFilter.status !== 'alle' || this.currentFilter.priority !== 'alle'; }
 
-  onFilterChange(): void {
-    this.filterSubject.next(this.currentFilter);
-  }
-
-  toggleFilters(): void {
-    this.showFilters = !this.showFilters;
-  }
-
-  setStatusFilter(status: 'alle' | 'offen' | 'erledigt'): void {
-    this.currentFilter.status = status;
-    this.onFilterChange();
-  }
-
-  setSort(sortBy: FilterState['sortBy'], sortOrder: FilterState['sortOrder']): void {
-    this.currentFilter.sortBy = sortBy;
-    this.currentFilter.sortOrder = sortOrder;
-    this.onFilterChange();
-  }
-
-  clearSearch(): void {
-    this.currentFilter.search = '';
-    this.onSearchChange({ target: { value: '' } });
-  }
-
-  clearAllFilters(): void {
-    this.currentFilter = {
-      search: '',
-      status: 'alle',
-      priority: 'alle',
-      sortBy: 'erstelltAm',
-      sortOrder: 'desc'
-    };
-    this.onFilterChange();
-    this.snackBar.open('Alle Filter wurden zurückgesetzt', 'Schließen', { duration: 2000 });
-  }
-
-  hasActiveFilters(): boolean {
-    return this.currentFilter.search !== '' || 
-           this.currentFilter.status !== 'alle' || 
-           this.currentFilter.priority !== 'alle';
-  }
-
-  // Dialog Methods
+  // Dialog
   openEditDialog(todo: Todo): void {
-    const dialogRef = this.dialog.open(TodoFormDialogComponent, {
-      width: '600px',
-      data: { mode: 'edit', todo: todo } as TodoFormData
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.update.emit(result);
-        this.snackBar.open('Todo erfolgreich aktualisiert', 'Schließen', { duration: 2000 });
-      }
-    });
+    const dialogRef = this.dialog.open(TodoFormDialogComponent, { width: '600px', data: { mode: 'edit', todo } as TodoFormData });
+    dialogRef.afterClosed().subscribe(result => { if (result) { this.update.emit(result); this.snackBar.open('Todo aktualisiert', 'Schließen', { duration: 2000 }); } });
   }
 
   // CRUD Event Handlers
-  onUpdate(todo: Todo): void {
-    this.update.emit(todo);
-    this.snackBar.open('Todo erfolgreich aktualisiert', 'Schließen', { duration: 2000 });
-  }
+  onUpdate(todo: Todo): void { this.update.emit(todo); }
+  onDelete(id: number): void { if (confirm('Möchten Sie dieses Todo wirklich löschen?')) { this.delete.emit(id); } }
+  onToggle(id: number): void { this.toggle.emit(id); }
 
-  onDelete(id: number): void {
-    if (confirm('Möchten Sie dieses Todo wirklich löschen?')) {
-      this.delete.emit(id);
-      this.snackBar.open('Todo erfolgreich gelöscht', 'Schließen', { duration: 2000 });
-    }
-  }
-
-  onToggle(id: number): void {
-    this.toggle.emit(id);
-  }
-
-  // New Todo Methods
-  startCreatingNew(): void {
-    this.isCreatingNew = true;
-    this.newTodo = {
-      titel: '',
-      beschreibung: '',
-      priority: 'niedrig',
-      endeAm: new Date(),
-      erledigt: false
-    };
-  }
-
-  cancelCreatingNew(): void {
-    this.isCreatingNew = false;
-    this.newTodo = {
-      titel: '',
-      beschreibung: '',
-      priority: 'niedrig',
-      endeAm: new Date(),
-      erledigt: false
-    };
-  }
-
-  saveNewTodo(): void {
-    if (this.isNewTodoValid()) {
-      this.create.emit(this.newTodo as Omit<Todo, 'id' | 'erstelltAm'>);
-      this.cancelCreatingNew();
-      this.snackBar.open('Todo erfolgreich erstellt', 'Schließen', { duration: 2000 });
-    }
-  }
-
-  isNewTodoValid(): boolean {
-    return !!(this.newTodo.titel?.trim() && 
-              this.newTodo.beschreibung?.trim() && 
-              this.newTodo.priority && 
-              this.newTodo.endeAm);
-  }
-
-  getPriorityLabel(priority: Priority): string {
-    const labels = {
-      niedrig: 'Niedrig',
-      mittel: 'Mittel',
-      hoch: 'Hoch'
-    };
-    return labels[priority];
-  }
-
-  isOverdue(todo: Todo): boolean {
-    return !todo.erledigt && new Date(todo.endeAm) < new Date();
-  }
+  // New Todo
+  startCreatingNew(): void { this.isCreatingNew = true; this.newTodo = { titel: '', beschreibung: '', priority: 'niedrig', endeAm: new Date(), erledigt: false }; }
+  cancelCreatingNew(): void { this.isCreatingNew = false; this.newTodo = { titel: '', beschreibung: '', priority: 'niedrig', endeAm: new Date(), erledigt: false }; }
+  saveNewTodo(): void { if (this.isNewTodoValid()) { this.create.emit(this.newTodo as Omit<Todo, 'id' | 'erstelltAm'>); this.cancelCreatingNew(); this.snackBar.open('Todo erstellt', 'Schließen', { duration: 2000 }); } }
+  isNewTodoValid(): boolean { return !!(this.newTodo.titel?.trim() && this.newTodo.beschreibung?.trim() && this.newTodo.priority && this.newTodo.endeAm); }
+  getPriorityLabel(priority: Priority): string { const labels = { niedrig: 'Niedrig', mittel: 'Mittel', hoch: 'Hoch' }; return labels[priority]; }
+  isOverdue(todo: Todo): boolean { return !todo.erledigt && new Date(todo.endeAm) < new Date(); }
 }

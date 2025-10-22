@@ -1,0 +1,261 @@
+.todo-card {
+      border-radius: var(--md-sys-shape-corner-large);
+      box-shadow: var(--md-sys-elevation-2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .todo-card:hover {
+      box-shadow: var(--md-sys-elevation-3);
+      transform: translateY(-2px);
+    }
+
+    .todo-card.completed {
+      opacity: 0.7;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .todo-card.completed .todo-title .title-text {
+      text-decoration: line-through;
+      color: #6c757d;
+    }
+
+    .todo-card.overdue {
+      border-left: 4px solid var(--priority-high);
+      background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    }
+
+    .todo-card.due-soon {
+      border-left: 4px solid var(--priority-medium);
+      background: linear-gradient(135deg, #fffbf0 0%, #fef3c7 100%);
+    }
+
+    .card-header {
+      padding: var(--md-sys-spacing-md);
+      padding-bottom: var(--md-sys-spacing-sm);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .todo-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .todo-title {
+      margin: 0 0 var(--md-sys-spacing-xs) 0;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 24px;
+    }
+
+    .title-text {
+      color: #1a1a1a;
+      word-break: break-word;
+    }
+
+    .todo-meta {
+      display: flex;
+      gap: var(--md-sys-spacing-sm);
+      font-size: 12px;
+      color: #6c757d;
+      margin: 0;
+    }
+
+    .todo-id {
+      font-weight: 500;
+      color: #4285f4;
+    }
+
+    .header-actions {
+      flex-shrink: 0;
+    }
+
+    .action-button {
+      color: #6c757d;
+    }
+
+    .action-button:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .card-content {
+      padding: 0 var(--md-sys-spacing-md) var(--md-sys-spacing-md);
+    }
+
+    .description-section {
+      margin-bottom: var(--md-sys-spacing-md);
+    }
+
+    .description-text {
+      font-size: 14px;
+      line-height: 20px;
+      color: #495057;
+      word-break: break-word;
+    }
+
+    .status-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--md-sys-spacing-md);
+      flex-wrap: wrap;
+      gap: var(--md-sys-spacing-sm);
+    }
+
+    .priority-status {
+      display: flex;
+      gap: var(--md-sys-spacing-xs);
+      flex-wrap: wrap;
+    }
+
+    .priority-chip {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-radius: var(--md-sys-shape-corner-large);
+    }
+
+    .priority-chip.priority-hoch {
+      background-color: var(--priority-high-container);
+      color: var(--priority-high);
+    }
+
+    .priority-chip.priority-mittel {
+      background-color: var(--priority-medium-container);
+      color: var(--priority-medium);
+    }
+
+    .priority-chip.priority-niedrig {
+      background-color: var(--priority-low-container);
+      color: var(--priority-low);
+    }
+
+    .overdue-chip {
+      background-color: #ffebee;
+      color: #c62828;
+      animation: pulse 2s infinite;
+    }
+
+    .due-soon-chip {
+      background-color: #fff3e0;
+      color: #f57c00;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .status-toggle {
+      display: flex;
+      align-items: center;
+    }
+
+    .toggle-label {
+      margin-left: var(--md-sys-spacing-xs);
+      font-size: 12px;
+      font-weight: 500;
+      color: #495057;
+    }
+
+    .due-date-section {
+      margin-bottom: var(--md-sys-spacing-md);
+    }
+
+    .due-date-info {
+      display: flex;
+      align-items: center;
+      gap: var(--md-sys-spacing-xs);
+    }
+
+    .due-date-icon {
+      font-size: 16px;
+      color: #6c757d;
+    }
+
+    .due-date-text {
+      font-size: 12px;
+      color: #6c757d;
+      font-weight: 500;
+    }
+
+    .edit-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--md-sys-spacing-sm);
+      margin-top: var(--md-sys-spacing-md);
+      padding-top: var(--md-sys-spacing-md);
+      border-top: 1px solid #e9ecef;
+    }
+
+    .edit-field {
+      width: 100%;
+    }
+
+    .edit-field.full-width {
+      width: 100%;
+    }
+
+    .cancel-button {
+      color: #6c757d;
+    }
+
+    .save-button {
+      border-radius: var(--md-sys-shape-corner-large);
+    }
+
+    .delete-action {
+      color: #e74c3c;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .status-section {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--md-sys-spacing-sm);
+      }
+
+      .priority-status {
+        justify-content: center;
+      }
+
+      .status-toggle {
+        justify-content: center;
+      }
+
+      .edit-actions {
+        flex-direction: column;
+      }
+    }
+
+    /* Focus styles for accessibility */
+    .todo-card:focus-within {
+      outline: 2px solid #4285f4;
+      outline-offset: 2px;
+    }
+
+    /* Animation for card appearance */
+    .todo-card {
+      animation: slideInUp 0.3s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }

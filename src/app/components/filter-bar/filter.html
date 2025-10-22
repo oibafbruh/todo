@@ -1,0 +1,20 @@
+<div class="filter-section">
+      <div class="filter-group">
+        <label class="filter-label">Status:</label>
+        <mat-chip-listbox class="filter-chips">
+          <mat-chip-option [selected]="status === 'alle'" (click)="statusChange.emit('alle')">Alle</mat-chip-option>
+          <mat-chip-option [selected]="status === 'offen'" (click)="statusChange.emit('offen')">Offen</mat-chip-option>
+          <mat-chip-option [selected]="status === 'erledigt'" (click)="statusChange.emit('erledigt')">Erledigt</mat-chip-option>
+        </mat-chip-listbox>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Priorität:</label>
+        <mat-chip-listbox class="filter-chips">
+          <mat-chip-option [selected]="priority === 'alle'" (click)="priorityChange.emit('alle')">Alle</mat-chip-option>
+          <mat-chip-option [selected]="priority === 'hoch'" (click)="priorityChange.emit('hoch')" class="chip-hoch">Hoch</mat-chip-option>
+          <mat-chip-option [selected]="priority === 'mittel'" (click)="priorityChange.emit('mittel')" class="chip-mittel">Mittel</mat-chip-option>
+          <mat-chip-option [selected]="priority === 'niedrig'" (click)="priorityChange.emit('niedrig')" class="chip-niedrig">Niedrig</mat-chip-option>
+        </mat-chip-listbox>
+      </div>
+    </div>

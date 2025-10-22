@@ -1,0 +1,272 @@
+    <div class="enhanced-table-container">
+      <!-- Modern Header with Card Design -->
+      <mat-card class="header-card">
+        <mat-card-header>
+          <div mat-card-avatar class="header-avatar">
+            <mat-icon>assignment</mat-icon>
+          </div>
+          <mat-card-title>Todo Management</mat-card-title>
+          <mat-card-subtitle>Verwalten Sie Ihre Aufgaben effizient</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <!-- Action Buttons Row -->
+          <div class="action-buttons-row">
+            <button mat-fab 
+                    color="primary" 
+                    (click)="openCreateDialog()"
+                    matTooltip="Neues Todo erstellen"
+                    class="fab-button">
+              <mat-icon>add</mat-icon>
+            </button>
+            
+            <div class="action-buttons">
+              <button mat-icon-button 
+                      (click)="refreshData()"
+                      [disabled]="isLoading$ | async"
+                      matTooltip="Daten aktualisieren"
+                      class="action-button">
+                <mat-icon>refresh</mat-icon>
+              </button>
+              
+              <button mat-icon-button 
+                      (click)="toggleFilters()"
+                      matTooltip="Filter umschalten"
+                      class="action-button">
+                <mat-icon>{{ showFilters ? 'filter_list_off' : 'filter_list' }}</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Advanced Filters Panel -->
+          <div class="filters-panel" [class.expanded]="showFilters">
+            <div class="filters-content">
+              <!-- Search Section -->
+              <div class="search-section">
+                <mat-form-field appearance="outline" class="search-field">
+                  <mat-label>Suche in Todos</mat-label>
+                  <input matInput 
+                         [(ngModel)]="currentFilter.search" 
+                         (input)="onSearchChange($event)"
+                         placeholder="Titel, Beschreibung oder ID eingeben...">
+                  <mat-icon matPrefix>search</mat-icon>
+                  <button mat-icon-button 
+                          matSuffix 
+                          *ngIf="currentFilter.search"
+                          (click)="clearSearch()"
+                          matTooltip="Suche löschen">
+                    <mat-icon>clear</mat-icon>
+                  </button>
+                </mat-form-field>
+              </div>
+
+              <!-- Filter Chips -->
+              <div class="filter-chips">
+                <mat-chip-set>
+                  <mat-chip 
+                    [class.selected]="currentFilter.status === 'alle'"
+                    (click)="setStatusFilter('alle')"
+                    matTooltip="Alle Todos anzeigen">
+                    <mat-icon matChipAvatar>list</mat-icon>
+                    Alle
+                  </mat-chip>
+                  <mat-chip 
+                    [class.selected]="currentFilter.status === 'offen'"
+                    (click)="setStatusFilter('offen')"
+                    matTooltip="Nur offene Todos">
+                    <mat-icon matChipAvatar>pending</mat-icon>
+                    Offen
+                  </mat-chip>
+                  <mat-chip 
+                    [class.selected]="currentFilter.status === 'erledigt'"
+                    (click)="setStatusFilter('erledigt')"
+                    matTooltip="Nur erledigte Todos">
+                    <mat-icon matChipAvatar>check_circle</mat-icon>
+                    Erledigt
+                  </mat-chip>
+                </mat-chip-set>
+              </div>
+
+              <!-- Priority Filter -->
+              <div class="priority-filter">
+                <mat-form-field appearance="outline" class="priority-field">
+                  <mat-label>Priorität filtern</mat-label>
+                  <mat-select [(ngModel)]="currentFilter.priority" (selectionChange)="onFilterChange()">
+                    <mat-option value="alle">
+                      <span class="priority-option all">Alle Prioritäten</span>
+                    </mat-option>
+                    <mat-option value="niedrig">
+                      <span class="priority-option niedrig">Niedrig</span>
+                    </mat-option>
+                    <mat-option value="mittel">
+                      <span class="priority-option mittel">Mittel</span>
+                    </mat-option>
+                    <mat-option value="hoch">
+                      <span class="priority-option hoch">Hoch</span>
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matPrefix>flag</mat-icon>
+                </mat-form-field>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="quick-actions">
+                <button mat-stroked-button 
+                        (click)="clearAllFilters()"
+                        [disabled]="!hasActiveFilters()"
+                        class="clear-filters-btn">
+                  <mat-icon>clear_all</mat-icon>
+                  Filter zurücksetzen
+                </button>
+                
+                <span class="results-count">
+                  {{ (filteredTodos$ | async)?.length || 0 }} von {{ (todos$ | async)?.length || 0 }} Todos
+                </span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Loading Spinner -->
+      @if (isLoading$ | async) {
+        <div class="loading-container">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Lade Todos...</p>
+        </div>
+    }
+
+
+      <!-- Table -->
+         @if (!(isLoading$ | async)) {
+            <div class="table-container">
+                <table mat-table
+                    [dataSource]="(paginatedTodos$ | async) || []"
+                    matSort
+                    (matSortChange)="onSortChange($event)"
+                    class="enhanced-table">
+         
+
+          <!-- ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+            <td mat-cell *matCellDef="let todo" class="id-cell">{{ todo.id }}</td>
+          </ng-container>
+
+          <!-- Title Column -->
+          <ng-container matColumnDef="titel">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Titel</th>
+            <td mat-cell *matCellDef="let todo" class="title-cell">
+              <div class="title-content">
+                <span class="title-text" [matTooltip]="todo.titel">{{ todo.titel }}</span>
+                <mat-icon *ngIf="isOverdue(todo)" 
+                          class="overdue-icon" 
+                          matTooltip="Überfällig">warning</mat-icon>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Description Column -->
+          <ng-container matColumnDef="beschreibung">
+            <th mat-header-cell *matHeaderCellDef>Beschreibung</th>
+            <td mat-cell *matCellDef="let todo" class="description-cell">
+              <span [matTooltip]="todo.beschreibung">{{ getTruncatedDescription(todo.beschreibung) }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Priority Column -->
+          <ng-container matColumnDef="priority">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Priorität</th>
+            <td mat-cell *matCellDef="let todo" class="priority-cell">
+              <mat-chip [class]="'priority-chip priority-' + todo.priority">
+                {{ getPriorityLabel(todo.priority) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="erledigt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+            <td mat-cell *matCellDef="let todo" class="status-cell">
+              <mat-checkbox 
+                [checked]="todo.erledigt" 
+                (change)="onToggleStatus(todo)"
+                [color]="'primary'"
+                [matTooltip]="todo.erledigt ? 'Als offen markieren' : 'Als erledigt markieren'">
+                {{ todo.erledigt ? 'Erledigt' : 'Offen' }}
+              </mat-checkbox>
+            </td>
+          </ng-container>
+
+          <!-- Created Date Column -->
+          <ng-container matColumnDef="erstelltAm">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Erstellt</th>
+            <td mat-cell *matCellDef="let todo" class="date-cell">
+              {{ todo.erstelltAm | date:'dd.MM.yyyy HH:mm' }}
+            </td>
+          </ng-container>
+
+          <!-- Due Date Column -->
+          <ng-container matColumnDef="endeAm">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Fällig</th>
+            <td mat-cell *matCellDef="let todo" class="due-date-cell" [class.overdue]="isOverdue(todo)">
+              {{ todo.endeAm | date:'dd.MM.yyyy HH:mm' }}
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Aktionen</th>
+            <td mat-cell *matCellDef="let todo" class="actions-cell">
+              <button mat-icon-button [matMenuTriggerFor]="actionMenu" matTooltip="Aktionen">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #actionMenu="matMenu">
+                <button mat-menu-item (click)="openEditDialog(todo)">
+                  <mat-icon>edit</mat-icon>
+                  <span>Bearbeiten</span>
+                </button>
+                <button mat-menu-item (click)="onToggleStatus(todo)">
+                  <mat-icon>{{ todo.erledigt ? 'undo' : 'check' }}</mat-icon>
+                  <span>{{ todo.erledigt ? 'Als offen markieren' : 'Als erledigt markieren' }}</span>
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="onDelete(todo)" class="delete-action">
+                  <mat-icon>delete</mat-icon>
+                  <span>Löschen</span>
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+              [class.completed-row]="row.erledigt"
+              [class.overdue-row]="isOverdue(row)"></tr>
+        </table>
+
+        <!-- No data message -->
+        @if ((filteredTodos$ | async)?.length === 0) {
+            <div class="no-data">
+                <mat-icon>inbox</mat-icon>
+                <h3>Keine Todos gefunden</h3>
+                <p>Versuchen Sie, Ihre Suchkriterien zu ändern oder erstellen Sie ein neues Todo.</p>
+                <button mat-raised-button color="primary" (click)="openCreateDialog()">
+                <mat-icon>add</mat-icon>
+                Erstes Todo erstellen
+                </button>
+            </div>
+}
+      </div>
+
+      <!-- Pagination -->
+      <mat-paginator 
+        *ngIf="(((filteredTodos$ | async)?.length) || 0) > 0"
+        [length]="(pagination$ | async)?.length || 0"
+        [pageSize]="(pagination$ | async)?.pageSize || 10"
+        [pageIndex]="(pagination$ | async)?.pageIndex || 0"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons>
+      </mat-paginator>
+    }

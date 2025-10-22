@@ -1,0 +1,137 @@
+    <div class="dialog-container">
+      <div class="dialog-header">
+        <div class="header-icon">
+          <mat-icon>{{ data.mode === 'create' ? 'add_circle' : 'edit' }}</mat-icon>
+        </div>
+        <div class="header-content">
+          <h2 mat-dialog-title class="dialog-title headline-medium">
+            {{ data.mode === 'create' ? 'Neues Todo erstellen' : 'Todo bearbeiten' }}
+          </h2>
+          <p class="dialog-subtitle body-medium">
+            {{ data.mode === 'create' ? 'Erstellen Sie eine neue Aufgabe' : 'Bearbeiten Sie die Todo-Details' }}
+          </p>
+        </div>
+      </div>
+
+      <mat-dialog-content>
+        <form [formGroup]="todoForm" class="todo-form">
+          <!-- Title Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Titel *</mat-label>
+            <input matInput 
+                   formControlName="titel" 
+                   placeholder="Titel des Todos eingeben..."
+                   maxlength="100">
+            <mat-icon matSuffix>title</mat-icon>
+            @if (todoForm.get('titel')?.hasError('required')) {
+                <mat-error>
+                    Titel ist erforderlich
+                </mat-error>
+                }
+
+                @if (todoForm.get('titel')?.hasError('minlength')) {
+                <mat-error>
+                    Titel muss mindestens 3 Zeichen lang sein
+                </mat-error>
+                }
+
+                @if (todoForm.get('titel')?.hasError('maxlength')) {
+                <mat-error>
+                    Titel darf maximal 100 Zeichen lang sein
+                </mat-error>
+                }
+          </mat-form-field>
+
+          <!-- Description Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Beschreibung *</mat-label>
+            <textarea matInput 
+                      formControlName="beschreibung" 
+                      placeholder="Beschreibung des Todos eingeben..."
+                      rows="4"
+                      maxlength="500"></textarea>
+            <mat-icon matSuffix>description</mat-icon>
+            <mat-form-field>
+                @if (todoForm.get('beschreibung')?.hasError('required')) {
+                    <mat-error>
+                    Beschreibung ist erforderlich
+                    </mat-error>
+                }
+
+                @if (todoForm.get('beschreibung')?.hasError('minlength')) {
+                    <mat-error>
+                    Beschreibung muss mindestens 10 Zeichen lang sein
+                    </mat-error>
+                }
+
+                @if (todoForm.get('beschreibung')?.hasError('maxlength')) {
+                    <mat-error>
+                    Beschreibung darf maximal 500 Zeichen lang sein
+                    </mat-error>
+                }
+            </mat-form-field>
+
+          </mat-form-field>
+
+          <!-- Priority Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Priorität *</mat-label>
+            <mat-select formControlName="priority">
+              <mat-option value="niedrig">
+                <span class="priority-option niedrig">Niedrig</span>
+              </mat-option>
+              <mat-option value="mittel">
+                <span class="priority-option mittel">Mittel</span>
+              </mat-option>
+              <mat-option value="hoch">
+                <span class="priority-option hoch">Hoch</span>
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>flag</mat-icon>
+            @if (todoForm.get('priority')?.hasError('required')) {
+                <mat-error>
+                    Priorität ist erforderlich
+                </mat-error>
+            }
+          </mat-form-field>
+
+          <!-- Due Date Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Fälligkeitsdatum *</mat-label>
+            <input matInput 
+                   [matDatepicker]="picker" 
+                   formControlName="endeAm"
+                   placeholder="Fälligkeitsdatum auswählen">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-icon matSuffix>event</mat-icon>
+            @if (todoForm.get('endeAm')?.hasError('required')) {
+                <mat-error>
+                    Fälligkeitsdatum ist erforderlich
+                </mat-error>
+            }
+
+            @if (todoForm.get('endeAm')?.hasError('futureDate')) {
+                <mat-error>
+                    Fälligkeitsdatum muss in der Zukunft liegen
+                </mat-error>
+            }
+          </mat-form-field>
+        </form>
+      </mat-dialog-content>
+
+      <mat-dialog-actions class="dialog-actions">
+        <button mat-button (click)="onCancel()" type="button" class="cancel-button">
+          Abbrechen
+        </button>
+        <button mat-raised-button 
+                color="primary" 
+                (click)="onSave()" 
+                [disabled]="todoForm.invalid"
+                type="button"
+                class="save-button">
+          <mat-icon>{{ data.mode === 'create' ? 'add' : 'save' }}</mat-icon>
+          {{ data.mode === 'create' ? 'Erstellen' : 'Speichern' }}
+        </button>
+      </mat-dialog-actions>
+    </div>
