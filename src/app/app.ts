@@ -1,36 +1,30 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule, NativeDateAdapter, provideNativeDateAdapter } from '@angular/material/core';
+import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
 import { TodoService } from './services/todo.service';
 import { Todo, Priority } from './models/todo.model';
+import { FormsModule } from '@angular/forms';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map } from 'rxjs';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { HeaderStatsComponent } from './components/header-stats/header-stats.component';
+import { NewTodoFormComponent } from './components/new-todo-form/new-todo-form.component';
+import { FilterBarComponent } from './components/filter-bar/filter-bar.component';
+import { SearchBarComponent } from './components/search-bar/search-bar.component';
+import { TodoListComponent } from './components/todo-list/todo-list.component';
 
 @Component({
   selector: 'app-root',
   imports: [
     CommonModule,
     FormsModule,
-    RouterOutlet,
-    DragDropModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatSelectModule,
-    MatDatepickerModule,
     MatNativeDateModule,
+    HeaderStatsComponent,
+    NewTodoFormComponent,
+    FilterBarComponent,
+    SearchBarComponent,
+    TodoListComponent,
+    RouterOutlet
   ],
   providers: [
     provideNativeDateAdapter()
@@ -40,143 +34,84 @@ import { Todo, Priority } from './models/todo.model';
 })
 
 export class App {
+  // Title kept as a signal (used by header component to render heading text if desired)
   title = signal('Angular To-Do App');
   
-  constructor(protected todoService: TodoService){  
-    //this.setDefaultDate();
-  }
+  // BehaviorSubjects represent UI state: filters and search term
+  status$ = new BehaviorSubject<'alle'|'offen'|'erledigt'>('alle');
+  priority$ = new BehaviorSubject<Priority|'alle'>('alle');
+  search$ = new BehaviorSubject<string>('');
 
-  //setDefaultDate(){
-  //  const nextWeek = new Date();
-  //  nextWeek.setDate(today.getDate()+7);
-  //  this.neueendeAm = nextWeek;
-  //}
+  // Convert the service's todos signal to an observable for RxJS composition
+  todos$!: ReturnType<typeof toObservable<Todo[]>>;
 
-  //New todo
-  neuerTitel = '';
-  neueBeschreibung = '';
-  neuePriority: Priority = 'mittel';
-  neueendeAm: Date = new Date(new Date().setDate(new Date().getDate() + 7)); //Setzt das Enddatum auf heute in einer Woche...
-  
-  // neueendeAm = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  
-  
-  //Mit Form Control 
-  // endDate = new FormControl(new Date(new Date().setDate(new Date().getDate() + 7))); 
+  // These will be initialized in the constructor after todos$ is available
+  searchDebounced$!: any;
+  filteredTodos$!: any;
+  totalCount$!: any;
+  openCount$!: any;
+  doneCount$!: any;
 
-  // edit todo
-  bearbeitenId: number | null = null;
-  bearbeitenTitel = '';
-  bearbeitenBeschreibung = '';
-  bearbeitenPriority: Priority = 'mittel';
-  bearbeitenendeAm = new Date();
-
-  // filter by status and prioprity
-  filterStatus = signal<'alle' | 'offen' | 'erledigt'>('alle');
-  filterPriority = signal<Priority | 'alle'>('alle');
-
-  get todos() {
-    return this.todoService.getTodos();
-  }
-
-  gefilterteTodos = computed(() => {
-    let todos = this.todos();
-    const statusFilter = this.filterStatus();
-    const priorityFilter = this.filterPriority();
+  constructor(protected todoService: TodoService) {
+    // Initialize todos$ after service is available
+    this.todos$ = toObservable(this.todoService.getTodos()) as ReturnType<typeof toObservable<Todo[]>>;
     
-    if (statusFilter === 'offen') {
-      todos = todos.filter(t => !t.erledigt);
-    } else if (statusFilter === 'erledigt') {
-      todos = todos.filter(t => t.erledigt);
-    }
-    
-    if (priorityFilter !== 'alle') {
-      todos = todos.filter(t => t.priority === priorityFilter);
-    }
-    
-    return todos;
-  });
+    // Initialize derived observables after todos$ is available
+    this.searchDebounced$ = this.search$.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    );
 
-  offeneTodos = computed(() => this.todos().filter(t => !t.erledigt).length);
-  erledigteAnzahl = computed(() => this.todos().filter(t => t.erledigt).length);
+    // Combine todos with filters and search into one derived stream powering the list
+    this.filteredTodos$ = combineLatest([
+      this.todos$,
+      this.status$,
+      this.priority$,
+      this.searchDebounced$
+    ]).pipe(
+      map((data: any) => {
+        const [todos, status, priority, term] = data;
+        const q = term.trim().toLowerCase();
+        let res = todos;
+        if (status === 'offen') res = res.filter((t: Todo) => !t.erledigt);
+        else if (status === 'erledigt') res = res.filter((t: Todo) => t.erledigt);
+        if (priority !== 'alle') res = res.filter((t: Todo) => t.priority === priority);
+        if (q) {
+          res = res.filter((t: Todo) =>
+            t.titel.toLowerCase().includes(q) ||
+            t.beschreibung.toLowerCase().includes(q)
+          );
+        }
+        return res;
+      })
+    );
 
-  hinzufuegen(): void {
-    if (this.neuerTitel.trim()) {
-      this.todoService.addTodo(
-        this.neuerTitel.trim(), 
-        this.neueBeschreibung.trim(),
-        this.neuePriority
-      );
-      this.neuerTitel = '';
-      this.neueBeschreibung = '';
-      this.neuePriority = 'mittel';
-    }
+    // Derived counters for header stats
+    this.totalCount$ = this.todos$.pipe(map((t: Todo[]) => t.length));
+    this.openCount$ = this.todos$.pipe(map((t: Todo[]) => t.filter((x: Todo) => !x.erledigt).length));
+    this.doneCount$ = this.todos$.pipe(map((t: Todo[]) => t.filter((x: Todo) => x.erledigt).length));
   }
 
-  startBearbeiten(todo: Todo): void {
-    this.bearbeitenId = todo.id;
-    this.bearbeitenTitel = todo.titel;
-    this.bearbeitenBeschreibung = todo.beschreibung;
-    this.bearbeitenPriority = todo.priority;
-    this.bearbeitenendeAm = todo.endeAm;
+  // Handlers called by child components (pure orchestration)
+  handleCreate(evt: { titel: string; beschreibung: string; priority: Priority; endeAm: Date }) {
+    this.todoService.addTodo(evt.titel.trim(), (evt.beschreibung || '').trim(), evt.priority);
+    // Extend addTodo if you want to store endeAm from evt
   }
 
-  speichern(): void {
-    if (this.bearbeitenId !== null && this.bearbeitenTitel.trim()) {
-      this.todoService.updateTodo(
-        this.bearbeitenId,
-        this.bearbeitenTitel.trim(),
-        this.bearbeitenBeschreibung.trim(),
-        this.bearbeitenPriority,
-        this.bearbeitenendeAm
-      );
-      this.abbrechenBearbeiten();
-    }
+  handleReorder(reordered: Todo[]) {
+    this.todoService.reorderTodos(reordered);
   }
 
-  abbrechenBearbeiten(): void {
-    this.bearbeitenId = null;
-    this.bearbeitenTitel = '';
-    this.bearbeitenBeschreibung = '';
-    this.bearbeitenPriority = 'mittel';
-  }
-
-  toggleErledigt(id: number): void {
+  handleToggle(id: number) {
     this.todoService.toggleErledigt(id);
   }
 
-  loeschen(id: number): void {
+  handleSave({ id, titel, beschreibung, priority, endeAm }: { id: number; titel: string; beschreibung: string; priority: Priority; endeAm: Date }) {
+    this.todoService.updateTodo(id, titel.trim(), (beschreibung || '').trim(), priority, endeAm);
+  }
+
+  handleDelete(id: number) {
     this.todoService.deleteTodo(id);
-    if (this.bearbeitenId === id) {
-      this.abbrechenBearbeiten();
-    }
-  }
-
-  setStatusFilter(filter: 'alle' | 'offen' | 'erledigt'): void {
-    this.filterStatus.set(filter);
-  }
-
-  setPriorityFilter(filter: Priority | 'alle'): void {
-    this.filterPriority.set(filter);
-  }
-
-  getPriorityClass(priority: Priority): string {
-    return `priority-${priority}`;
-  }
-
-  getPriorityLabel(priority: Priority): string {
-    const labels = {
-      'niedrig': 'Niedrig',
-      'mittel': 'Mittel',
-      'hoch': 'Hoch'
-    };
-    return labels[priority];
-  }
-
-  onTodoDrop(event: CdkDragDrop<Todo[]>): void {
-    const todos = [...this.gefilterteTodos()];
-    moveItemInArray(todos, event.previousIndex, event.currentIndex);
-    this.todoService.reorderTodos(todos);
   }
 }
 
