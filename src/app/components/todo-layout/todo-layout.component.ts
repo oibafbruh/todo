@@ -118,19 +118,19 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   }
 
   //reaktiver dataflow für gefilterte und sortierte todos
-  private setupReactiveStreams(): void {
+  private setupReactiveStreams(): void { 
     this.filteredTodos$ = combineLatest([                 //kombiniert mehrere observable immer wenn neue werte geliefert werden
       this.todos$.pipe(                                   //holt sich die todo liste
         startWith([]),                                    //start mit empty array
         catchError(error => {                             //error handling mit console log und snackbar
           console.error('Error loading todos:', error);
-          this.snackBar.open('Fehler beim Laden der Todos', 'Schließen', { duration: 3000 });
+          this.snackBar.open('Fehler beim Laden der Todos, mehr Infos in der Konsole', 'Schließen', { duration: 3000 });
           return of([]);                                  //return empty array bei fehler
         })
       ),
       this.filterSubject.asObservable().pipe(
         debounceTime(300)                                 //debounce für filter (speziell für suche alle 300ms)
-      )                   
+      )                 
     ]).pipe(
       map(([todos, filter]) => {                          //holt sich die todos
         let filtered = this.applyFilters(todos, filter);  //filtert die liste
@@ -164,6 +164,11 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
 
   //gibt sortiertes array aus
   private applySorting(todos: Todo[], filter: FilterState): Todo[] {
+    if(filter.search === '') //debug
+    {
+          console.log("Order: "+ filter.sortOrder + " Prio: " + filter.priority + " Suche: Leer" + " Status: " + filter.status);
+    }
+    else {console.log("Order: "+ filter.sortOrder + " Prio: " + filter.priority + " Suche: " + filter.search + " Status: " + filter.status);}
     return [...todos].sort((a, b) => {                                      //kopiert todo liste und vergleicht
       let aValue: any, bValue: any;
       switch (filter.sortBy) {

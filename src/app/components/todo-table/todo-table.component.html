@@ -141,7 +141,7 @@
          @if (!(isLoading$ | async)) {
             <div class="table-container">
                 <table mat-table
-                    [dataSource]="(paginatedTodos$ | async) || []"
+                    [dataSource]="(filteredTodos$ | async) || []"
                     matSort
                     (matSortChange)="onSortChange($event)"
                     class="enhanced-table">
@@ -259,17 +259,4 @@
 }
       </div>
 
-      <!-- Pagination -->
-      @if (pagination$ | async; as pagination) {
-      @if (pagination.length > 0) {
-        <mat-paginator
-          [length]="pagination.length"
-          [pageSize]="pagination.pageSize"
-          [pageIndex]="pagination.pageIndex"
-          [pageSizeOptions]="[5, 10, 25, 50]"
-          (page)="onPageChange($event)"
-          showFirstLastButtons>
-        </mat-paginator>
-      }
-    }
     }

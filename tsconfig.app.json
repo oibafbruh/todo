@@ -10,7 +10,7 @@
   },
   "include": [
     "src/**/*.ts"
-  ],
+, "src/app/components/todo-table/todo-table..componentts"  ],
   "exclude": [
     "src/**/*.spec.ts"
   ]

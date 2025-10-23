@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { TodoService } from './services/todo.service';
 import { Todo, Priority } from './models/todo.model';
@@ -9,8 +8,7 @@ import { TodoLayoutComponent } from './components/todo-layout/todo-layout.compon
   selector: 'app-root',
   standalone: true,
   imports: [
-    TodoLayoutComponent,
-    RouterOutlet
+    TodoLayoutComponent
 ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './app.html',
