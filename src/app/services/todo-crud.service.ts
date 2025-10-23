@@ -7,7 +7,7 @@ export class TodoCrudService {
   static initialTodos = initialTodos;
 
   //Todo erstellen
-  static addTodo(todos: Todo[], titel: string, beschreibung: string, priority: Priority): Todo[] {
+  static addTodo(todos: Todo[], titel: string, beschreibung: string, priority: Priority, endeAm: Date): Todo[] {
     const newTodo: Todo = {
       id: this.idCounter + 1, //auto increment -- vielleicht besser mit new Date()?
       titel,
@@ -15,7 +15,7 @@ export class TodoCrudService {
       priority,
       erledigt: false,
       erstelltAm: new Date(),
-      endeAm: new Date()
+      endeAm: endeAm
     };
     this.idCounter += 1;
     return [...todos, newTodo]; //update, spread operator
@@ -36,5 +36,4 @@ export class TodoCrudService {
   static deleteTodo(todos: Todo[], id: number): Todo[] {
     return todos.filter(todo => todo.id !== id);
   }
-  //Todo neu sortieren
 }

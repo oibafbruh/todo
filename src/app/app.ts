@@ -26,7 +26,7 @@ export class App {
   //fürs erstellen von todo, trimt titel/beschreibung und sendet an todoService
   handleCreate(evt: { titel: string; beschreibung: string; priority: Priority; endeAm: Date }) {
     console.log('Creating new todo:', evt);
-    this.todoService.addTodo(evt.titel.trim(), evt.beschreibung.trim(), evt.priority);
+    this.todoService.addTodo(evt.titel.trim(), evt.beschreibung.trim(), evt.priority, evt.endeAm);
   }
   //bearbeiten
   handleUpdate(evt: Todo) {

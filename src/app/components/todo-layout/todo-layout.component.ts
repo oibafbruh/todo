@@ -18,7 +18,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { 
   BehaviorSubject, 
   combineLatest, 
@@ -48,6 +48,7 @@ export interface FilterState {
   standalone: true,
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     FormsModule,
     MatToolbarModule,
     MatButtonModule,
@@ -77,16 +78,10 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   @Output() update = new EventEmitter<Todo>();
   @Output() delete = new EventEmitter<number>();
   @Output() toggle = new EventEmitter<number>();
-
-  // erstelle neues initiali todo state
-  newTodo: Partial<Todo> = {
-    titel: '',
-    beschreibung: '',
-    priority: 'niedrig',
-    endeAm: new Date(),
-    erledigt: false
-  };
+  todoForm!: FormGroup;
   isCreatingNew = false;
+
+  
 
   // filter und sortierungs zustand 
   currentFilter: FilterState = {
@@ -103,13 +98,42 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   filteredTodos$!: Observable<Todo[]>;                                                //liefert gefilterte todos
   isLoading$ = new BehaviorSubject<boolean>(false);                                   //ui zustand; true = lädt, false = fertig
 
+
   constructor(
     private dialog: MatDialog,
-    private snackBar: MatSnackBar 
+    private snackBar: MatSnackBar,
+    private fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
     this.setupReactiveStreams();  //initial hook für streams
+    this.initForm();
+  }
+
+  initForm() {
+    // Set default date to one week from today
+    const oneWeekFromToday = new Date();
+    oneWeekFromToday.setDate(oneWeekFromToday.getDate() + 7);
+    
+    this.todoForm = this.fb.group({
+      titel: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+      priority: ['niedrig', Validators.required],
+      endeAm: [oneWeekFromToday, [Validators.required, this.futureDateValidator]],
+      beschreibung: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]]
+    });
+  }
+
+  /**
+   * Custom validator to ensure due date is in the future
+   */
+  private futureDateValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+    
+    const selectedDate = new Date(control.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return selectedDate >= today ? null : { futureDate: true };
   }
 
   ngOnDestroy(): void {           //hook wenn komponente zerstört wird, memory leaks verhindern
@@ -168,7 +192,9 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     {
           console.log("Order: "+ filter.sortOrder + " Prio: " + filter.priority + " Suche: Leer" + " Status: " + filter.status);
     }
-    else {console.log("Order: "+ filter.sortOrder + " Prio: " + filter.priority + " Suche: " + filter.search + " Status: " + filter.status);}
+    else {
+      console.log("Order: "+ filter.sortOrder + " Prio: " + filter.priority + " Suche: " + filter.search + " Status: " + filter.status);
+    }
     return [...todos].sort((a, b) => {                                      //kopiert todo liste und vergleicht
       let aValue: any, bValue: any;
       switch (filter.sortBy) {
@@ -241,39 +267,74 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   // Neues Todo erstellen
   startCreatingNew(): void { 
     this.isCreatingNew = true; 
-    this.newTodo = { 
-      titel: '', 
-      beschreibung: '', 
-      priority: 'niedrig', 
-      endeAm: new Date(), 
-      erledigt: false }; 
+    // Set default date to one week from today
+    const oneWeekFromToday = new Date();
+    oneWeekFromToday.setDate(oneWeekFromToday.getDate() + 7);
+    
+    this.todoForm.reset({
+      titel: '',
+      beschreibung: '',
+      priority: 'niedrig',
+      endeAm: oneWeekFromToday
+    });
     }
 
   cancelCreatingNew(): void { 
     this.isCreatingNew = false; 
-    this.newTodo = { 
-      titel: '', 
-      beschreibung: '', 
-      priority: 'niedrig', 
-      endeAm: new Date(), 
-      erledigt: false }; 
+    this.todoForm.reset({
+      titel: '',
+      beschreibung: '',
+      priority: 'niedrig',
+      endeAm: ''
+    });
     }
 
   //Speichern von Todo
   saveNewTodo(): void { 
-    if (this.isNewTodoValid()) {                                              //Validierungscheck
-      this.create.emit(this.newTodo as Omit<Todo, 'id' | 'erstelltAm'>);      //create Event emit
+    if (this.todoForm.valid) {                                              //Validierungscheck
+      const formValue = this.todoForm.value;
+      this.create.emit({
+        titel: formValue.titel,
+        beschreibung: formValue.beschreibung,
+        priority: formValue.priority,
+        endeAm: formValue.endeAm,
+        erledigt: false
+      });      //create Event emit
       this.cancelCreatingNew();                                               //Forumlar schließen
       this.snackBar.open('Todo erstellt', 'Schließen', { duration: 2000 });   //Snackbar bestätigung
-    }   
+    } else {
+      this.logValidationErrors();
+      this.snackBar.open('Bitte korrigieren Sie die Eingabefehler', 'Schließen', {
+        duration: 3000,
+        horizontalPosition: 'right',
+        verticalPosition: 'top'
+      });
+    }
   }
 
   //Validierung
   isNewTodoValid(): boolean { 
-    return !!(this.newTodo.titel?.trim() && 
-    this.newTodo.beschreibung?.trim() && 
-    this.newTodo.priority && 
-    this.newTodo.endeAm); 
+    return this.todoForm.valid;
+  }
+
+  /**
+   * Logs detailed validation errors for debugging
+   */
+  private logValidationErrors(): void {
+    const errors: any = {};
+    
+    Object.keys(this.todoForm.controls).forEach(key => {
+      const control = this.todoForm.get(key);
+      if (control && control.errors) {
+        errors[key] = control.errors;
+      }
+    });
+
+    console.error('Todo form validation errors:', {
+      errors,
+      formValue: this.todoForm.value,
+      timestamp: new Date().toISOString()
+    });
   }
 
   //Umwandlung priority namen

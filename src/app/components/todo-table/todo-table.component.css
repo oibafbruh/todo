@@ -152,18 +152,18 @@
     }
 
     .priority-option.niedrig {
-      background-color: #e8f5e8;
-      color: #2e7d32;
+      background-color: #00ff00;
+      color: #00ff0d;
     }
 
     .priority-option.mittel {
       background-color: #fff3e0;
-      color: #f57c00;
+      color: #ff8000;
     }
 
     .priority-option.hoch {
       background-color: #ffebee;
-      color: #c62828;
+      color: #ff0000;
     }
 
     /* Quick Actions */

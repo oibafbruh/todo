@@ -18,8 +18,8 @@ export class TodoService {
     return this.todosSubject.getValue();
   }
 
-  addTodo(titel: string, beschreibung: string, priority: Priority) {
-    this.todosSubject.next(TodoCrudService.addTodo(this.todos, titel, beschreibung, priority)); //next() für update aller components
+  addTodo(titel: string, beschreibung: string, priority: Priority, endeAm: Date) {
+    this.todosSubject.next(TodoCrudService.addTodo(this.todos, titel, beschreibung, priority, endeAm)); //next() für update aller components
   }
 
   toggleErledigt(id: number) {

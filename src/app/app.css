@@ -1,50 +1,52 @@
-/* App component specific styles - Material Design 3 layout */
+/* App component specific styles - Google-inspired minimalistic design */
 
 .app-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #fafafa;
 }
 
-/* Global Material Design 3 enhancements */
+/* Global Material Design enhancements */
 .mat-mdc-card {
-  border-radius: var(--md-sys-shape-corner-large) !important;
-  box-shadow: var(--md-sys-elevation-2) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24) !important;
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mat-mdc-card:hover {
-  box-shadow: var(--md-sys-elevation-3) !important;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23) !important;
 }
 
 .mat-mdc-button {
-  border-radius: var(--md-sys-shape-corner-large) !important;
+  border-radius: 4px !important;
   font-weight: 500;
 }
 
 .mat-mdc-fab {
-  border-radius: var(--md-sys-shape-corner-extra-large) !important;
-  box-shadow: var(--md-sys-elevation-3) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12) !important;
 }
 
 .mat-mdc-form-field {
   .mat-mdc-form-field-outline {
-    border-radius: var(--md-sys-shape-corner-medium) !important;
+    border-radius: 4px !important;
   }
 }
 
 /* Typography enhancements */
 .headline-medium {
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 32px;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 28px;
   letter-spacing: 0;
+  color: #202124;
 }
 
 .title-medium {
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 24px;
-  letter-spacing: 0.15px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: #202124;
 }
 
 .body-medium {
@@ -52,6 +54,7 @@
   font-weight: 400;
   line-height: 20px;
   letter-spacing: 0.25px;
+  color: #5f6368;
 }
 
 .label-small {
@@ -59,6 +62,32 @@
   font-weight: 500;
   line-height: 16px;
   letter-spacing: 0.5px;
+  color: #5f6368;
+}
+
+/* Footer styling */
+footer {
+  background: #fff;
+  border-top: 1px solid #dadce0;
+  margin-top: 40px;
+  padding: 24px 0;
+  text-align: center;
+  color: #5f6368;
+}
+
+footer p {
+  margin: 4px 0;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+footer a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
 }
 
 /* Responsive adjustments */
