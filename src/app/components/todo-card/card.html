@@ -1,109 +1,113 @@
-    <mat-card 
-      class="todo-card"
-      [class.completed]="todo.erledigt"
-      [class.overdue]="isOverdue"
-      [class.due-soon]="isDueSoon"
-      matRipple
-      [matRippleDisabled]="isEditing">
-      
-      <!-- Card Header -->
-      <mat-card-header class="card-header">
-        <div class="header-content">
-          <div class="todo-info">
-            <mat-card-title class="todo-title">
-              @if (!isEditing) {
-                <span class="title-text">{{ todo.titel }}</span>
-                }
-              <mat-form-field *ngIf="isEditing" appearance="outline" class="edit-field">
-                <input matInput 
-                       [(ngModel)]="editData.titel" 
-                       placeholder="Titel"
-                       (keydown.enter)="saveEdit()"
-                       (keydown.escape)="cancelEdit()">
-              </mat-form-field>
-            </mat-card-title>
-            
-            <mat-card-subtitle class="todo-meta">
-              <span class="todo-id">#{{ todo.id }}</span>
-              <span class="created-date">Erstellt: {{ todo.erstelltAm | date:'dd.MM.yyyy' }}</span>
-            </mat-card-subtitle>
-          </div>
-          
-          <div class="header-actions">
-            <button mat-icon-button 
-                    [matMenuTriggerFor]="actionMenu"
-                    matTooltip="Aktionen"
-                    class="action-button">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            
-            <mat-menu #actionMenu="matMenu" class="action-menu">
-              <button mat-menu-item (click)="startEdit()">
-                <mat-icon>edit</mat-icon>
-                <span>Bearbeiten</span>
-              </button>
-              <button mat-menu-item (click)="toggleStatus()">
-                <mat-icon>{{ todo.erledigt ? 'undo' : 'check_circle' }}</mat-icon>
-                <span>{{ todo.erledigt ? 'Als offen markieren' : 'Als erledigt markieren' }}</span>
-              </button>
-              <mat-divider></mat-divider>
-              <button mat-menu-item (click)="deleteTodo()" class="delete-action">
-                <mat-icon>delete</mat-icon>
-                <span>Löschen</span>
-              </button>
-            </mat-menu>
-          </div>
-        </div>
-      </mat-card-header>
+<mat-card
+  class="todo-card"
+  [class.completed]="todo.erledigt"
+  [class.overdue]="isOverdue"
+  [class.due-soon]="isDueSoon"
+  matRipple
+  [matRippleDisabled]="isEditing">
 
-      <!-- Card Content -->
-      <mat-card-content class="card-content">
-        <!-- Description -->
-        <div class="description-section">
+  <!-- Card Header -->
+  <mat-card-header class="card-header">
+    <div class="header-content">
+      <div class="todo-info">
+        <mat-card-title class="todo-title">
           @if (!isEditing) {
-            <span class="description-text">{{ todo.beschreibung }}</span>
-        }
-          <mat-form-field *ngIf="isEditing" appearance="outline" class="edit-field full-width">
-            <textarea matInput 
-                      [(ngModel)]="editData.beschreibung" 
-                      placeholder="Beschreibung"
-                      rows="3"></textarea>
-          </mat-form-field>
+            <span class="title-text">{{ todo.titel }}</span>
+          }
+          @if (isEditing) {
+            <mat-form-field appearance="outline" class="edit-field">
+              <input matInput
+                [(ngModel)]="editData.titel"
+                placeholder="Titel"
+                (keydown.enter)="saveEdit()"
+                (keydown.escape)="cancelEdit()">
+              </mat-form-field>
+            }
+          </mat-card-title>
+
+          <mat-card-subtitle class="todo-meta">
+            <span class="todo-id">#{{ todo.id }}</span>
+            <span class="created-date">Erstellt: {{ todo.erstelltAm | date:'dd.MM.yyyy' }}</span>
+          </mat-card-subtitle>
         </div>
 
-        <!-- Priority and Status -->
-        <div class="status-section">
-          <div class="priority-status">
-            <mat-chip 
-              [class]="'priority-chip priority-' + todo.priority"
-              matTooltip="Priorität: {{ getPriorityLabel(todo.priority) }}">
-              <mat-icon matChipAvatar>{{ getPriorityIcon(todo.priority) }}</mat-icon>
-              {{ getPriorityLabel(todo.priority) }}
-            </mat-chip>
-            
-            @if (isOverdue) {
-                <mat-chip 
-                    class="overdue-chip"
-                    matTooltip="Überfällig">
-                    <mat-icon matChipAvatar>warning</mat-icon>
-                    Überfällig
-                </mat-chip>
-            }
+        <div class="header-actions">
+          <button mat-icon-button
+            [matMenuTriggerFor]="actionMenu"
+            matTooltip="Aktionen"
+            class="action-button">
+            <mat-icon>more_vert</mat-icon>
+          </button>
 
-            
-            @if (isDueSoon && !isOverdue) {
-                <mat-chip 
-                    class="due-soon-chip"
-                    matTooltip="Fällig in weniger als 24 Stunden">
-                    <mat-icon matChipAvatar>schedule</mat-icon>
-                    Bald fällig
-                </mat-chip>
-            }
+          <mat-menu #actionMenu="matMenu" class="action-menu">
+            <button mat-menu-item (click)="startEdit()">
+              <mat-icon>edit</mat-icon>
+              <span>Bearbeiten</span>
+            </button>
+            <button mat-menu-item (click)="toggleStatus()">
+              <mat-icon>{{ todo.erledigt ? 'undo' : 'check_circle' }}</mat-icon>
+              <span>{{ todo.erledigt ? 'Als offen markieren' : 'Als erledigt markieren' }}</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="deleteTodo()" class="delete-action">
+              <mat-icon>delete</mat-icon>
+              <span>Löschen</span>
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <!-- Card Content -->
+    <mat-card-content class="card-content">
+      <!-- Description -->
+      <div class="description-section">
+        @if (!isEditing) {
+          <span class="description-text">{{ todo.beschreibung }}</span>
+        }
+        @if (isEditing) {
+          <mat-form-field appearance="outline" class="edit-field full-width">
+            <textarea matInput
+              [(ngModel)]="editData.beschreibung"
+              placeholder="Beschreibung"
+            rows="3"></textarea>
+          </mat-form-field>
+        }
+      </div>
+
+      <!-- Priority and Status -->
+      <div class="status-section">
+        <div class="priority-status">
+          <mat-chip
+            [class]="'priority-chip priority-' + todo.priority"
+            matTooltip="Priorität: {{ getPriorityLabel(todo.priority) }}">
+            <mat-icon matChipAvatar>{{ getPriorityIcon(todo.priority) }}</mat-icon>
+            {{ getPriorityLabel(todo.priority) }}
+          </mat-chip>
+
+          @if (isOverdue) {
+            <mat-chip
+              class="overdue-chip"
+              matTooltip="Überfällig">
+              <mat-icon matChipAvatar>warning</mat-icon>
+              Überfällig
+            </mat-chip>
+          }
+
+
+          @if (isDueSoon && !isOverdue) {
+            <mat-chip
+              class="due-soon-chip"
+              matTooltip="Fällig in weniger als 24 Stunden">
+              <mat-icon matChipAvatar>schedule</mat-icon>
+              Bald fällig
+            </mat-chip>
+          }
 
 
           <!-- Status Toggle -->
           <div class="status-toggle">
-            <mat-slide-toggle 
+            <mat-slide-toggle
               [checked]="todo.erledigt"
               (change)="toggleStatus()"
               [color]="'primary'"
@@ -118,37 +122,39 @@
           <div class="due-date-info">
             <mat-icon class="due-date-icon">event</mat-icon>
             @if (!isEditing) {
-                <span class="due-date-text">
-                    Fällig: {{ todo.endeAm | date:'dd.MM.yyyy HH:mm' }}
-                </span>
+              <span class="due-date-text">
+                Fällig: {{ todo.endeAm | date:'dd.MM.yyyy HH:mm' }}
+              </span>
             }
-            <mat-form-field *ngIf="isEditing" appearance="outline" class="edit-field">
-              <input matInput 
-                     [matDatepicker]="picker" 
-                     [(ngModel)]="editData.endeAm"
-                     placeholder="Fälligkeitsdatum">
-              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
-            </mat-form-field>
+            @if (isEditing) {
+              <mat-form-field appearance="outline" class="edit-field">
+                <input matInput
+                  [matDatepicker]="picker"
+                  [(ngModel)]="editData.endeAm"
+                  placeholder="Fälligkeitsdatum">
+                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+              }
+            </div>
           </div>
-        </div>
 
-        <!-- Edit Actions -->
-        @if (isEditing) {
+          <!-- Edit Actions -->
+          @if (isEditing) {
             <div class="edit-actions">
-                <button mat-button (click)="cancelEdit()" class="cancel-button">
+              <button mat-button (click)="cancelEdit()" class="cancel-button">
                 <mat-icon>close</mat-icon>
                 Abbrechen
-                </button>
+              </button>
 
-          <button mat-raised-button 
-                  color="primary" 
-                  (click)="saveEdit()"
-                  [disabled]="!isEditValid()"
-                  class="save-button">
-            <mat-icon>save</mat-icon>
-            Speichern
-          </button>
-        </div>
-    }
-    <mat-card> </mat-card>
+              <button mat-raised-button
+                color="primary"
+                (click)="saveEdit()"
+                [disabled]="!isEditValid()"
+                class="save-button">
+                <mat-icon>save</mat-icon>
+                Speichern
+              </button>
+            </div>
+          }
+          <mat-card> </mat-card>

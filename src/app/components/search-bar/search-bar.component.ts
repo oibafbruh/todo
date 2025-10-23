@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,7 +8,7 @@ import { timer } from 'rxjs';
 @Component({
   selector: 'app-search-bar',
   standalone: true,
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatIconModule],
+  imports: [MatFormFieldModule, MatInputModule, MatIconModule],
   templateUrl: `./search.html`
 })
 export class SearchBarComponent {

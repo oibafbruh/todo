@@ -4,33 +4,7 @@
     <div class="toolbar-content">
       <div class="toolbar-left">
         <mat-icon class="toolbar-icon">assignment</mat-icon>
-        <span class="toolbar-title headline-medium">Todo Management</span>
-      </div>
-      
-      <div class="toolbar-right">
-        <button mat-icon-button 
-                [matMenuTriggerFor]="sortMenu"
-                matTooltip="Sortieren">
-          <mat-icon>sort</mat-icon>
-        </button>
-        <mat-menu #sortMenu="matMenu">
-          <button mat-menu-item (click)="setSort('erstelltAm', 'desc')">
-            <mat-icon>schedule</mat-icon>
-            <span>Neueste zuerst</span>
-          </button>
-          <button mat-menu-item (click)="setSort('endeAm', 'asc')">
-            <mat-icon>event</mat-icon>
-            <span>Fälligkeitsdatum</span>
-          </button>
-          <button mat-menu-item (click)="setSort('priority', 'desc')">
-            <mat-icon>flag</mat-icon>
-            <span>Priorität</span>
-          </button>
-          <button mat-menu-item (click)="setSort('titel', 'asc')">
-            <mat-icon>title</mat-icon>
-            <span>Alphabetisch</span>
-          </button>
-        </mat-menu>
+        <span class="toolbar-title headline-medium">Angular Todo App</span>
       </div>
     </div>
   </mat-toolbar>

@@ -134,7 +134,7 @@
             <mat-spinner diameter="50"></mat-spinner>
             <p>Lade Todos...</p>
         </div>
-    }
+        }
 
 
       <!-- Table -->
@@ -159,7 +159,7 @@
             <td mat-cell *matCellDef="let todo" class="title-cell">
               <div class="title-content">
                 <span class="title-text" [matTooltip]="todo.titel">{{ todo.titel }}</span>
-                <mat-icon *ngIf="isOverdue(todo)" 
+                <mat-icon *ngIf="isOverdue(todo)"
                           class="overdue-icon" 
                           matTooltip="Überfällig">warning</mat-icon>
               </div>
@@ -260,13 +260,16 @@
       </div>
 
       <!-- Pagination -->
-      <mat-paginator 
-        *ngIf="(((filteredTodos$ | async)?.length) || 0) > 0"
-        [length]="(pagination$ | async)?.length || 0"
-        [pageSize]="(pagination$ | async)?.pageSize || 10"
-        [pageIndex]="(pagination$ | async)?.pageIndex || 0"
-        [pageSizeOptions]="[5, 10, 25, 50]"
-        (page)="onPageChange($event)"
-        showFirstLastButtons>
-      </mat-paginator>
+      @if (pagination$ | async; as pagination) {
+      @if (pagination.length > 0) {
+        <mat-paginator
+          [length]="pagination.length"
+          [pageSize]="pagination.pageSize"
+          [pageIndex]="pagination.pageIndex"
+          [pageSizeOptions]="[5, 10, 25, 50]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+      }
+    }
     }

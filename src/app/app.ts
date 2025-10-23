@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterOutlet } from '@angular/router';
 import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
 // Removed unused Material imports for sidenav, buttons, icons, toolbar, and tooltips
@@ -14,12 +14,11 @@ import { ModernTodoLayoutComponent } from './components/modern-todo-layout/moder
   selector: 'app-root',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     MatNativeDateModule,
     ModernTodoLayoutComponent,
     RouterOutlet
-  ],
+],
   providers: [provideNativeDateAdapter()],
   templateUrl: './app.html',
   styleUrls: ['./app.css']

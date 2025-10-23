@@ -28,41 +28,39 @@ import { Todo } from '../../models/todo.model';
   ],
   template: `
     <div class="card aufgaben-card" [class.erledigt]="todo.erledigt" [ngClass]="'priority-' + todo.priority">
-      <div class="card-body" *ngIf="!isEditing; else editTpl">
-        <div class="aufgabe-header">
-          <button mat-icon-button class="drag-handle" title="Ziehen zum Neuordnen">
-            <mat-icon>drag_indicator</mat-icon>
-          </button>
-
-          <mat-checkbox [checked]="todo.erledigt" (change)="toggle.emit(todo.id)" color="primary" class="todo-checkbox"></mat-checkbox>
-
-          <div class="aufgabe-content">
-            <div class="aufgabe-title-row">
-              <h3 class="aufgabe-titel">{{ todo.titel }}</h3>
-              <span class="priority-badge" [ngClass]="'priority-' + todo.priority">{{ getPriorityLabel(todo.priority) }}</span>
+      @if (!isEditing) {
+        <div class="card-body">
+          <div class="aufgabe-header">
+            <button mat-icon-button class="drag-handle" title="Ziehen zum Neuordnen">
+              <mat-icon>drag_indicator</mat-icon>
+            </button>
+            <mat-checkbox [checked]="todo.erledigt" (change)="toggle.emit(todo.id)" color="primary" class="todo-checkbox"></mat-checkbox>
+            <div class="aufgabe-content">
+              <div class="aufgabe-title-row">
+                <h3 class="aufgabe-titel">{{ todo.titel }}</h3>
+                <span class="priority-badge" [ngClass]="'priority-' + todo.priority">{{ getPriorityLabel(todo.priority) }}</span>
+              </div>
+              @if (todo.beschreibung) {
+                <p class="aufgabe-beschreibung">{{ todo.beschreibung }}</p>
+              }
+              <div class="aufgabe-meta">
+                <mat-icon class="meta-icon">schedule</mat-icon>
+                <span>Erstellt am {{ todo.erstelltAm | date:'dd.MM.yyyy, HH:mm' }} Uhr, fällig bis {{ todo.endeAm | date:'dd.MM.yyyy, HH:mm' }} Uhr</span>
+              </div>
             </div>
-            <p class="aufgabe-beschreibung" *ngIf="todo.beschreibung">{{ todo.beschreibung }}</p>
-            <div class="aufgabe-meta">
-              <mat-icon class="meta-icon">schedule</mat-icon>
-              <span>Erstellt am {{ todo.erstelltAm | date:'dd.MM.yyyy, HH:mm' }} Uhr, fällig bis {{ todo.endeAm | date:'dd.MM.yyyy, HH:mm' }} Uhr</span>
+            <div class="aufgabe-actions">
+              <button mat-icon-button (click)="enterEdit()" title="Bearbeiten"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button color="warn" (click)="delete.emit(todo.id)" title="Löschen"><mat-icon>delete</mat-icon></button>
             </div>
-          </div>
-
-          <div class="aufgabe-actions">
-            <button mat-icon-button (click)="enterEdit()" title="Bearbeiten"><mat-icon>edit</mat-icon></button>
-            <button mat-icon-button color="warn" (click)="delete.emit(todo.id)" title="Löschen"><mat-icon>delete</mat-icon></button>
           </div>
         </div>
-      </div>
-
-      <ng-template #editTpl>
+      } @else {
         <div class="card-body">
           <form [formGroup]="form" (ngSubmit)="saveEdit()">
             <mat-form-field appearance="outline" class="flex-2">
               <mat-label>Titel</mat-label>
               <input matInput formControlName="titel" />
             </mat-form-field>
-
             <mat-form-field appearance="outline" class="flex-1">
               <mat-label>Priorität</mat-label>
               <mat-select formControlName="priority">
@@ -71,28 +69,26 @@ import { Todo } from '../../models/todo.model';
                 <mat-option value="hoch">Hoch</mat-option>
               </mat-select>
             </mat-form-field>
-
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Beschreibung</mat-label>
               <textarea matInput rows="2" formControlName="beschreibung"></textarea>
             </mat-form-field>
-
             <mat-form-field appearance="outline" class="flex-1">
               <mat-label>Enddatum</mat-label>
               <input matInput [matDatepicker]="picker" formControlName="endeAm" />
               <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
             </mat-form-field>
-
             <div class="form-actions">
               <button type="submit" mat-raised-button color="primary">Speichern</button>
               <button type="button" mat-button (click)="cancelEdit()">Abbrechen</button>
             </div>
           </form>
         </div>
-      </ng-template>
+      }
+    
     </div>
-  `
+    `
 })
 export class TodoItemComponent {
   @Input() todo!: Todo;

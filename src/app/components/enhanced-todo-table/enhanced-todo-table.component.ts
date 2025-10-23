@@ -93,7 +93,7 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     'id', 'titel', 'beschreibung', 'priority', 'erledigt', 'erstelltAm', 'endeAm', 'actions'
   ];
 
-  // RxJS streams for reactive data management
+  // RxJS streams
   private destroy$ = new Subject<void>();
   private filterSubject = new BehaviorSubject<TableFilter>({
     search: '',
@@ -111,7 +111,7 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
   });
   private loadingSubject = new BehaviorSubject<boolean>(false);
 
-  // Public observables
+  // observables
   currentFilter: TableFilter = { search: '', status: 'alle', priority: 'alle' };
   filteredTodos$!: Observable<Todo[]>;
   paginatedTodos$!: Observable<Todo[]>;
@@ -141,9 +141,6 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     this.destroy$.complete();
   }
 
-  /**
-   * Sets up reactive streams for filtering, sorting, and pagination
-   */
   private setupReactiveStreams(): void {
     // Combine todos with filters and sorting
     this.filteredTodos$ = combineLatest([
@@ -173,7 +170,6 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
       takeUntil(this.destroy$)
     );
 
-    // Apply pagination to filtered and sorted data
     this.paginatedTodos$ = combineLatest([
       this.filteredTodos$,
       this.paginationSubject.asObservable()
@@ -187,9 +183,6 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     );
   }
 
-  /**
-   * Applies filters to the todo list
-   */
   private applyFilters(todos: Todo[], filter: TableFilter): Todo[] {
     return todos.filter(todo => {
       // Search filter
@@ -216,9 +209,6 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     });
   }
 
-  /**
-   * Applies sorting to the todo list
-   */
   private applySorting(todos: Todo[], sort: TableSort): Todo[] {
     return [...todos].sort((a, b) => {
       let aValue: any, bValue: any;
@@ -254,24 +244,15 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     });
   }
 
-  /**
-   * Handles search input changes with debouncing
-   */
   onSearchChange(event: any): void {
     this.currentFilter.search = event.target.value;
     this.filterSubject.next(this.currentFilter);
   }
 
-  /**
-   * Handles filter changes
-   */
   onFilterChange(): void {
     this.filterSubject.next(this.currentFilter);
   }
 
-  /**
-   * Handles sort changes
-   */
   onSortChange(sort: Sort): void {
     this.sortSubject.next({
       active: sort.active,
@@ -279,9 +260,6 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     });
   }
 
-  /**
-   * Handles pagination changes
-   */
   onPageChange(event: PageEvent): void {
     this.paginationSubject.next({
       pageIndex: event.pageIndex,
@@ -290,9 +268,6 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     });
   }
 
-  /**
-   * Opens the create todo dialog
-   */
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(TodoFormDialogComponent, {
       width: '600px',
@@ -307,9 +282,6 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     });
   }
 
-  /**
-   * Opens the edit todo dialog
-   */
   openEditDialog(todo: Todo): void {
     const dialogRef = this.dialog.open(TodoFormDialogComponent, {
       width: '600px',
@@ -324,18 +296,12 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     });
   }
 
-  /**
-   * Handles todo status toggle
-   */
   onToggleStatus(todo: Todo): void {
     this.toggle.emit(todo.id);
     const action = todo.erledigt ? 'als offen markiert' : 'als erledigt markiert';
     this.snackBar.open(`Todo "${todo.titel}" wurde ${action}`, 'Schließen', { duration: 2000 });
   }
 
-  /**
-   * Handles todo deletion
-   */
   onDelete(todo: Todo): void {
     if (confirm(`Möchten Sie das Todo "${todo.titel}" wirklich löschen?`)) {
       this.delete.emit(todo.id);
@@ -343,9 +309,6 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     }
   }
 
-  /**
-   * Refreshes the data
-   */
   refreshData(): void {
     this.loadingSubject.next(true);
     // Simulate loading time
@@ -355,25 +318,16 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     }, 1000);
   }
 
-  /**
-   * Checks if a todo is overdue
-   */
   isOverdue(todo: Todo): boolean {
     return !todo.erledigt && new Date(todo.endeAm) < new Date();
   }
 
-  /**
-   * Gets truncated description for display
-   */
   getTruncatedDescription(description: string, maxLength: number = 50): string {
     return description.length > maxLength 
       ? description.substring(0, maxLength) + '...' 
       : description;
   }
 
-  /**
-   * Gets priority label for display
-   */
   getPriorityLabel(priority: Priority): string {
     const labels = {
       niedrig: 'Niedrig',
@@ -383,41 +337,26 @@ export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges 
     return labels[priority];
   }
 
-  /**
-   * Toggles the filters panel visibility
-   */
   toggleFilters(): void {
     this.showFilters = !this.showFilters;
   }
 
-  /**
-   * Sets status filter using chip selection
-   */
   setStatusFilter(status: 'alle' | 'offen' | 'erledigt'): void {
     this.currentFilter.status = status;
     this.onFilterChange();
   }
 
-  /**
-   * Clears the search input
-   */
   clearSearch(): void {
     this.currentFilter.search = '';
     this.onSearchChange({ target: { value: '' } });
   }
 
-  /**
-   * Clears all active filters
-   */
   clearAllFilters(): void {
     this.currentFilter = { search: '', status: 'alle', priority: 'alle' };
     this.onFilterChange();
     this.snackBar.open('Alle Filter wurden zurückgesetzt', 'Schließen', { duration: 2000 });
   }
 
-  /**
-   * Checks if any filters are active
-   */
   hasActiveFilters(): boolean {
     return this.currentFilter.search !== '' || 
            this.currentFilter.status !== 'alle' || 
