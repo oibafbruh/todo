@@ -8,7 +8,7 @@ import { map } from 'rxjs';
 
 import { TodoService } from './services/todo.service';
 import { Todo, Priority } from './models/todo.model';
-import { ModernTodoLayoutComponent } from './components/modern-todo-layout/modern-todo-layout.component';
+import { TodoLayoutComponent } from './components/todo-layout/todo-layout.component';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +16,7 @@ import { ModernTodoLayoutComponent } from './components/modern-todo-layout/moder
   imports: [
     FormsModule,
     MatNativeDateModule,
-    ModernTodoLayoutComponent,
+    TodoLayoutComponent,
     RouterOutlet
 ],
   providers: [provideNativeDateAdapter()],

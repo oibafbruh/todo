@@ -40,8 +40,8 @@ import { Todo, Priority } from '../../models/todo.model';
     MatSelectModule,
     MatDividerModule
   ],
-  templateUrl: `./card.html`,
-  styleUrls: [`./card.css`]
+  templateUrl: `./todo-card.component.html`,
+  styleUrls: [`./todo-card.component.css`]
 })
 export class TodoCardComponent implements OnInit, OnDestroy {
   @Input() todo!: Todo;

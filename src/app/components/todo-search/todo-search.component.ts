@@ -6,12 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { timer } from 'rxjs';
 
 @Component({
-  selector: 'app-search-bar',
+  selector: 'app-todo-search',
   standalone: true,
   imports: [MatFormFieldModule, MatInputModule, MatIconModule],
-  templateUrl: `./search.html`
+  templateUrl: `./todo-search.component.html`
 })
-export class SearchBarComponent {
+export class TodoSearchComponent {
   @Output() search = new EventEmitter<string>();
   @Output() debounceTime = new EventEmitter<number>();
 
@@ -26,5 +26,3 @@ export class SearchBarComponent {
     this.debounceTime.emit(ms);
   }
 }
-
-

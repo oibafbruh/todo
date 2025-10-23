@@ -33,8 +33,8 @@ export interface TodoFormData {
     MatIconModule,
     MatSnackBarModule
 ],
-  templateUrl: `./dialog.html`,
-  styleUrls: [`./dialog.css`]
+  templateUrl: `./todo-form-dialog.component.html`,
+  styleUrls: [`./todo-form-dialog.component.css`]
 })
 export class TodoFormDialogComponent implements OnInit {
   todoForm: FormGroup;

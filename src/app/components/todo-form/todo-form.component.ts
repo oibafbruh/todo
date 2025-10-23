@@ -9,7 +9,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 
 @Component({
-  selector: 'app-new-todo-form',
+  selector: 'app-todo-form',
   standalone: true,
   imports: [
     CommonModule,
@@ -21,9 +21,9 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatDatepickerModule,
     MatNativeDateModule,
   ],
-  templateUrl: './form.html'
+  templateUrl: './todo-form.component.html'
 })
-export class NewTodoFormComponent {
+export class TodoFormComponent {
   @Output() create = new EventEmitter<{ titel: string; beschreibung: string; priority: 'niedrig'|'mittel'|'hoch'; endeAm: Date }>();
 
   form!: FormGroup;
@@ -63,5 +63,3 @@ export class NewTodoFormComponent {
     return new Date(new Date().setDate(new Date().getDate() + 7));
   }
 }
-
-

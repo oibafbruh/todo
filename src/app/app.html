@@ -1,13 +1,13 @@
 
 <div class="app-container">
   <!-- Modern Todo Layout -->
-  <app-modern-todo-layout
+  <app-todo-layout
     [todos$]="todos$"
     (create)="handleCreate($event)"
     (update)="handleUpdate($event)"
     (toggle)="handleToggle($event)"
     (delete)="handleDelete($event)">
-  </app-modern-todo-layout>
+  </app-todo-layout>
 </div>
 
 <footer>

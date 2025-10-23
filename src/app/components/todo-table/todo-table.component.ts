@@ -55,7 +55,7 @@ export interface TablePagination {
 }
 
 @Component({
-  selector: 'app-enhanced-todo-table',
+  selector: 'app-todo-table',
   standalone: true,
   imports: [
     CommonModule,
@@ -79,10 +79,10 @@ export interface TablePagination {
     MatCardModule,
     MatChipsModule
   ],
-  templateUrl: './table.html',
-  styleUrls: ['./styles.css']
+  templateUrl: './todo-table.component.html',
+  styleUrls: ['./todo-table.component.css']
 })
-export class EnhancedTodoTableComponent implements OnInit, OnDestroy, OnChanges {
+export class TodoTableComponent implements OnInit, OnDestroy, OnChanges {
   @Input() todos$!: Observable<Todo[]>;
   @Output() create = new EventEmitter<Omit<Todo, 'id' | 'erstelltAm'>>();
   @Output() update = new EventEmitter<Todo>();

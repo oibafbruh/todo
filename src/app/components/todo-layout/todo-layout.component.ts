@@ -43,7 +43,7 @@ export interface FilterState {
 }
 
 @Component({
-  selector: 'app-modern-todo-layout',
+  selector: 'app-todo-layout',
   standalone: true,
   imports: [
     CommonModule,
@@ -67,10 +67,10 @@ export interface FilterState {
     MatDatepickerModule,
     MatNativeDateModule
   ],
-  templateUrl: './modern-todo-layout.component.html',
-  styleUrls: ['./modern-todo-layout.component.scss']
+  templateUrl: './todo-layout.component.html',
+  styleUrls: ['./todo-layout.component.scss']
 })
-export class ModernTodoLayoutComponent implements OnInit, OnDestroy {
+export class TodoLayoutComponent implements OnInit, OnDestroy {
   @Input() todos$!: Observable<Todo[]>;
   @Output() create = new EventEmitter<Omit<Todo, 'id' | 'erstelltAm'>>();
   @Output() update = new EventEmitter<Todo>();
