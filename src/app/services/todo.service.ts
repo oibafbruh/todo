@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Todo, Priority } from '../models/todo.model';
 import { TodoCrud } from './todo.crud';
+import { initialTodos } from './todo.initial';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TodoService {
-  private readonly todosSubject = new BehaviorSubject<Todo[]>(TodoCrud.initialTodos);
+  private readonly todosSubject = new BehaviorSubject<Todo[]>(initialTodos);
 
   todos$ = this.todosSubject.asObservable();
 

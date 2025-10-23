@@ -21,8 +21,6 @@ import { MatCardModule } from '@angular/material/card';
 import { 
   BehaviorSubject, 
   combineLatest, 
-  debounceTime, 
-  distinctUntilChanged, 
   map, 
   Subject, 
   takeUntil, 
@@ -30,7 +28,6 @@ import {
   of, 
   catchError,
   startWith,
-  switchMap,
   tap
 } from 'rxjs';
 
@@ -76,8 +73,7 @@ export interface TablePagination {
     MatSortModule,
     MatMenuModule,
     MatDividerModule,
-    MatCardModule,
-    MatChipsModule
+    MatCardModule
   ],
   templateUrl: './todo-table.component.html',
   styleUrls: ['./todo-table.component.css']

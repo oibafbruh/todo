@@ -2,9 +2,7 @@ import { Todo, Priority } from '../models/todo.model';
 import { initialTodos } from './todo.initial';
 
 export class TodoCrud {
-  private static idCounter = initialTodos.length; // max-idinitialisieren
-
-  static initialTodos = initialTodos;
+  private static idCounter = initialTodos.length;
 
   static addTodo(todos: Todo[], titel: string, beschreibung: string, priority: Priority): Todo[] {
     const newTodo: Todo = {

@@ -1,5 +1,5 @@
 import { Todo } from '../models/todo.model';
-
+//export als constant array
 export const initialTodos: Todo[] = [
   { 
     id: 1, titel: 'Ausschlafen am Wochenende', 

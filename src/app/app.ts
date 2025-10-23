@@ -1,11 +1,6 @@
 import { Component } from '@angular/core';
-
 import { RouterOutlet } from '@angular/router';
-import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
-// Removed unused Material imports for sidenav, buttons, icons, toolbar, and tooltips
-import { FormsModule } from '@angular/forms';
-import { map } from 'rxjs';
-
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { TodoService } from './services/todo.service';
 import { Todo, Priority } from './models/todo.model';
 import { TodoLayoutComponent } from './components/todo-layout/todo-layout.component';
@@ -14,8 +9,6 @@ import { TodoLayoutComponent } from './components/todo-layout/todo-layout.compon
   selector: 'app-root',
   standalone: true,
   imports: [
-    FormsModule,
-    MatNativeDateModule,
     TodoLayoutComponent,
     RouterOutlet
 ],
@@ -24,50 +17,30 @@ import { TodoLayoutComponent } from './components/todo-layout/todo-layout.compon
   styleUrls: ['./app.css']
 })
 export class App {
-  // Removed old filter subjects as they're now handled by the enhanced table component
-
-  todos$;
-  totalCount$;
-  openCount$;
-  doneCount$;
+  todos$; //oberservable stream vom todo.service fpr child components
 
   constructor(private todoService: TodoService) {
-    // Initialize todos observable
+    // holt sich observable stream
     this.todos$ = this.todoService.getTodos();
-    
-    // Calculate statistics for header
-    this.totalCount$ = this.todos$.pipe(map(t => t.length));
-    this.openCount$ = this.todos$.pipe(map(t => t.filter(x => !x.erledigt).length));
-    this.doneCount$ = this.todos$.pipe(map(t => t.filter(x => x.erledigt).length));
   }
 
-  /**
-   * Handles todo creation from the enhanced table component
-   */
+  //Event Handler Bereich
+  //fürs erstellen von todo, trimt titel/beschreibung und sendet an todoService
   handleCreate(evt: { titel: string; beschreibung: string; priority: Priority; endeAm: Date }) {
     console.log('Creating new todo:', evt);
     this.todoService.addTodo(evt.titel.trim(), evt.beschreibung.trim(), evt.priority);
   }
-
-  /**
-   * Handles todo updates from the enhanced table component
-   */
+  //bearbeiten
   handleUpdate(evt: Todo) {
     console.log('Updating todo:', evt);
     this.todoService.updateTodo(evt.id, evt.titel.trim(), evt.beschreibung.trim(), evt.priority, evt.endeAm);
   }
-
-  /**
-   * Handles todo status toggle from the enhanced table component
-   */
+  //abhacken von todos
   handleToggle(id: number) {
     console.log('Toggling todo status:', id);
     this.todoService.toggleErledigt(id);
   }
-
-  /**
-   * Handles todo deletion from the enhanced table component
-   */
+  //löschen
   handleDelete(id: number) {
     console.log('Deleting todo:', id);
     this.todoService.deleteTodo(id);
