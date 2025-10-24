@@ -6,9 +6,7 @@ import { Todo, Priority } from '../models/todo.model';
 })
 export class TodoUtilsService {
 
-  /**
-   * Konvertiert Priorität zu lesbarem Text
-   */
+  //Konvertiert Priorität zu lesbarem Text
   getPriorityLabel(priority: Priority): string {
     const labels = {
       niedrig: 'Niedrig',
@@ -18,25 +16,19 @@ export class TodoUtilsService {
     return labels[priority];
   }
 
-  /**
-   * Prüft ob Todo überfällig ist
-   */
+  //Prüft ob Todo überfällig ist
   isOverdue(todo: Todo): boolean {
     return !todo.erledigt && new Date(todo.endeAm) < new Date();
   }
 
-  /**
-   * Kürzt Beschreibung ab
-   */
-  getTruncatedDescription(description: string, maxLength: number = 50): string {
+  //kürzt Beschreibung ab
+  getTruncatedDescription(description: string, maxLength = 50): string {
     return description.length > maxLength 
       ? description.substring(0, maxLength) + '...'
       : description;
   }
 
-  /**
-   * Formatiert Datum für Anzeige
-   */
+  //Formatiert Datum für Anzeige
   formatDate(date: Date | string, format: 'short' | 'long' = 'short'): string {
     const dateObj = new Date(date);
     if (format === 'short') {
@@ -52,9 +44,7 @@ export class TodoUtilsService {
     }
   }
 
-  /**
-   * Generiert CSS-Klassen für Todo-Status
-   */
+  //Generiert CSS-Klassen für Todo-Status
   getTodoRowClasses(todo: Todo): string[] {
     const classes: string[] = [];
     
@@ -69,16 +59,12 @@ export class TodoUtilsService {
     return classes;
   }
 
-  /**
-   * Generiert CSS-Klassen für Prioritäts-Chips
-   */
+  //Generiert CSS-Klassen für Prioritäts-Chips
   getPriorityChipClass(priority: Priority): string {
     return `priority-chip priority-${priority}`;
   }
 
-  /**
-   * Validiert ob Datum in der Zukunft liegt
-   */
+  //Validiert ob Datum in der Zukunft liegt
   isFutureDate(date: Date | string): boolean {
     const dateObj = new Date(date);
     const today = new Date();
@@ -86,9 +72,7 @@ export class TodoUtilsService {
     return dateObj >= today;
   }
 
-  /**
-   * Berechnet verbleibende Tage bis Fälligkeit
-   */
+  //gberechnet verbleibende Tage bis Fälligkeit
   getDaysUntilDue(todo: Todo): number {
     const dueDate = new Date(todo.endeAm);
     const today = new Date();
@@ -96,9 +80,7 @@ export class TodoUtilsService {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  /**
-   * Generiert Tooltip-Text für Todo
-   */
+  //Generiert Tooltip-Text für Todo
   getTodoTooltip(todo: Todo): string {
     const daysUntilDue = this.getDaysUntilDue(todo);
     let tooltip = `Titel: ${todo.titel}\nBeschreibung: ${todo.beschreibung}`;

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { TodoService } from './services/todo.service';
 import { Todo, Priority } from './models/todo.model';
@@ -15,12 +15,9 @@ import { TodoLayoutComponent } from './components/todo-layout/todo-layout.compon
   styleUrls: ['./app.css']
 })
 export class App {
-  todos$; //oberservable stream vom todo.service fpr child components
+  private todoService = inject(TodoService);
 
-  constructor(private todoService: TodoService) {
-    // holt sich observable stream
-    this.todos$ = this.todoService.getTodos();
-  }
+  todos$ = this.todoService.getTodos();
 
   //Event Handler Bereich
   //fürs erstellen von todo, trimt titel/beschreibung und sendet an todoService

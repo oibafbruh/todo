@@ -1,5 +1,5 @@
 // Angular Core Imports
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { BehaviorSubject, Subject, Observable } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -22,12 +22,17 @@ import { BASIC_MATERIAL_IMPORTS } from '../../shared/material-imports';
   styleUrls: ['./todo-table.component.css']
 })
 export class TodoTableComponent implements OnInit, OnDestroy, OnChanges {
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+  private filterService = inject(TodoFilterService);
+  private utilsService = inject(TodoUtilsService);
+
   // Input/Output Properties
   @Input() todos$!: Observable<Todo[]>;                              // Observable stream von parent component
   @Output() create = new EventEmitter<Omit<Todo, 'id' | 'erstelltAm'>>();  // Event für neues Todo
   @Output() update = new EventEmitter<Todo>();                       // Event für Todo-Update
-  @Output() delete = new EventEmitter<number>();                     // Event für Todo-Löschung
-  @Output() toggle = new EventEmitter<number>();                     // Event für Status-Toggle
+  @Output() deleteTodo = new EventEmitter<number>();                     // Event für Todo-Löschung
+  @Output() toggleTodo = new EventEmitter<number>();                     // Event für Status-Toggle
 
   // Tabellenspalten Definition
   displayedColumns: string[] = [
@@ -55,22 +60,16 @@ export class TodoTableComponent implements OnInit, OnDestroy, OnChanges {
   isLoading$ = this.loadingSubject.asObservable();                   // Loading-State als Observable
   
   // UI State Properties
-  showFilters = false;                                               // Zeigt/versteckt Filter-Panel
+  showFilters = false;
 
-  constructor(
-    private dialog: MatDialog,                                         // Für Dialog-Öffnung
-    private snackBar: MatSnackBar,                                     // Für Benutzer-Feedback
-    private filterService: TodoFilterService,                          // Filter-Service
-    private utilsService: TodoUtilsService                             // Utils-Service
-  ) {}
 
   ngOnInit(): void {
-    this.setupReactiveStreams();                                       // Initiale Stream-Setup
+    this.setupReactiveStreams();                                       // Initial Stream start
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['todos$'] && this.todos$) {                           // Wenn todos$ sich ändert
-      this.setupReactiveStreams();                                     // Streams neu setup
+      this.setupReactiveStreams();                                    // Streams neu start
     }
   }
 
@@ -99,11 +98,10 @@ export class TodoTableComponent implements OnInit, OnDestroy, OnChanges {
     );
   }
 
-  // Diese Methoden wurden in den TodoFilterService ausgelagert
-
   // Filter Event Handlers
-  onSearchChange(event: any): void {                                   // Suchfeld-Änderung
-    this.currentFilter.search = event.target.value;                   // Suchbegriff aktualisieren
+  onSearchChange(event: Event): void {                                   // Suchfeld-Änderung
+    const target = event.target as HTMLInputElement;
+    this.currentFilter.search = target.value;                   // Suchbegriff aktualisieren
     this.updateFilterState();                                         // Filter-Stream triggern
   }
 
@@ -161,14 +159,14 @@ export class TodoTableComponent implements OnInit, OnDestroy, OnChanges {
 
   // CRUD Event Handlers
   onToggleStatus(todo: Todo): void {                                   // Status-Toggle (erledigt ↔ offen)
-    this.toggle.emit(todo.id);                                         // Toggle-Event emittieren
+    this.toggleTodo.emit(todo.id);                                         // Toggle-Event emittieren
     const action = todo.erledigt ? 'als offen markiert' : 'als erledigt markiert';  // Action-Text für Meldung
     this.snackBar.open(`Todo "${todo.titel}" wurde ${action}`, 'Schließen', { duration: 2000 });  // Status-Änderung melden
   }
 
   onDelete(todo: Todo): void {                                         // Todo-Löschung
     if (confirm(`Möchten Sie das Todo "${todo.titel}" wirklich löschen?`)) {  // Bestätigung vom Benutzer
-      this.delete.emit(todo.id);                                       // Delete-Event emittieren
+      this.deleteTodo.emit(todo.id);                                       // Delete-Event emittieren
       this.snackBar.open('Todo erfolgreich gelöscht', 'Schließen', { duration: 2000 });  // Löschung bestätigen
     }
   }
@@ -186,7 +184,7 @@ export class TodoTableComponent implements OnInit, OnDestroy, OnChanges {
     return this.utilsService.isOverdue(todo);
   }
 
-  getTruncatedDescription(description: string, maxLength: number = 50): string {  // Kürzt Beschreibung ab
+  getTruncatedDescription(description: string, maxLength = 50): string {  // Kürzt Beschreibung ab
     return this.utilsService.getTruncatedDescription(description, maxLength);
   }
 
@@ -206,7 +204,7 @@ export class TodoTableComponent implements OnInit, OnDestroy, OnChanges {
 
   clearSearch(): void {                                               // Löscht Suchfeld
     this.currentFilter.search = '';                                   // Suchbegriff zurücksetzen
-    this.onSearchChange({ target: { value: '' } });                  // Suchfeld-Event triggern
+    this.onSearchChange({ target: { value: '' } } as unknown as Event);                  // Suchfeld-Event triggern
   }
 
   clearAllFilters(): void {                                           // Setzt alle Filter zurück

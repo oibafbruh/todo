@@ -1,6 +1,6 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
-import { Todo, Priority } from '../../models/todo.model';
+import { Todo } from '../../models/todo.model';
 
 export interface TodoFormData {
   todo?: Todo;
@@ -37,16 +37,12 @@ export interface TodoFormData {
   styleUrls: [`./todo-form-dialog.component.css`]
 })
 export class TodoFormDialogComponent implements OnInit {
-  todoForm: FormGroup;
+  private fb = inject(FormBuilder);
+  private dialogRef = inject<MatDialogRef<TodoFormDialogComponent>>(MatDialogRef);
+  data = inject<TodoFormData>(MAT_DIALOG_DATA);
+  private snackBar = inject(MatSnackBar);
 
-  constructor(
-    private fb: FormBuilder,
-    private dialogRef: MatDialogRef<TodoFormDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: TodoFormData,
-    private snackBar: MatSnackBar
-  ) {
-    this.todoForm = this.createForm();
-  }
+  todoForm: FormGroup = this.createForm();
 
   ngOnInit(): void {
     if (this.data.mode === 'edit' && this.data.todo) {
@@ -80,7 +76,7 @@ export class TodoFormDialogComponent implements OnInit {
   /**
    * Custom validator to ensure due date is in the future
    */
-  private futureDateValidator(control: any) {
+  private futureDateValidator(control: AbstractControl) {
     if (!control.value) return null;
     
     const selectedDate = new Date(control.value);
@@ -134,7 +130,7 @@ export class TodoFormDialogComponent implements OnInit {
    * Logs detailed validation errors for debugging
    */
   private logValidationErrors(): void {
-    const errors: any = {};
+    const errors: Record<string, unknown> = {};
     
     Object.keys(this.todoForm.controls).forEach(key => {
       const control = this.todoForm.get(key);

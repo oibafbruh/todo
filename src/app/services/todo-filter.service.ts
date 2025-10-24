@@ -15,9 +15,7 @@ export interface FilterState {
 })
 export class TodoFilterService {
   
-  /**
-   * Filtert Todos basierend auf Suchkriterien
-   */
+  //filtert Todos basierend auf Suchkriterien
   applyFilters(todos: Todo[], filter: FilterState): Todo[] {
     return todos.filter(todo => {
       // Such-Filter: Titel, Beschreibung oder ID
@@ -45,23 +43,22 @@ export class TodoFilterService {
     });
   }
 
-  /**
-   * Sortiert Todos basierend auf gewählter Spalte und Richtung
-   */
+  //Sortiert Todos basierend auf gewählter Spalte und Richtung
   applySorting(todos: Todo[], filter: FilterState): Todo[] {
     return [...todos].sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: string | number, bValue: string | number;
 
       switch (filter.sortBy) {
         case 'titel':
           aValue = a.titel.toLowerCase();
           bValue = b.titel.toLowerCase();
           break;
-        case 'priority':
+        case 'priority': {
           const priorityOrder = { niedrig: 1, mittel: 2, hoch: 3 } as const;
           aValue = priorityOrder[a.priority];
           bValue = priorityOrder[b.priority];
           break;
+        }
         case 'erstelltAm':
         case 'endeAm':
           aValue = new Date(a[filter.sortBy]).getTime();
@@ -77,9 +74,7 @@ export class TodoFilterService {
     });
   }
 
-  /**
-   * Erstellt einen reaktiven Stream für gefilterte und sortierte Todos
-   */
+  //Erstellt einen reaktiven Stream für gefilterte und sortierte Todos
   createFilteredTodosStream(
     todos$: Observable<Todo[]>,
     filterSubject: BehaviorSubject<FilterState>,
@@ -98,25 +93,21 @@ export class TodoFilterService {
       )
     ]).pipe(
       map(([todos, filter]) => {
-        let filtered = this.applyFilters(todos, filter);
+        const filtered = this.applyFilters(todos, filter);
         return this.applySorting(filtered, filter);
       }),
       takeUntil(destroy$)
     );
   }
 
-  /**
-   * Prüft ob aktive Filter gesetzt sind
-   */
+  //Prüft ob aktive Filter gesetzt sind
   hasActiveFilters(filter: FilterState): boolean {
     return filter.search !== '' || 
            filter.status !== 'alle' || 
            filter.priority !== 'alle';
   }
 
-  /**
-   * Setzt alle Filter zurück
-   */
+  //Setzt alle Filter zurück
   getDefaultFilter(): FilterState {
     return {
       search: '',

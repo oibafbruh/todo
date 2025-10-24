@@ -1,18 +1,17 @@
 <div class="modern-layout">
-  <!-- Modern Toolbar -->
+  <!-- TItel -->
   <mat-toolbar class="modern-toolbar" color="primary">
     <div class="toolbar-content">
       <div class="toolbar-left">
-        <mat-icon class="toolbar-icon">assignment</mat-icon>
         <span class="toolbar-title headline-medium">Angular Todo App</span>
       </div>
     </div>
   </mat-toolbar>
 
-  <!-- Filters Bar (always visible) -->
+  <!-- Filter-->
   <div class="filters-bar">
     <div class="filter-content">
-      <!-- Search -->
+      <!-- Suche -->
       <div class="filter-item filter-search">
         <mat-form-field appearance="outline" class="search-field">
           <mat-label>Suche in Todos</mat-label>
@@ -32,7 +31,7 @@
         </mat-form-field>
       </div>
 
-      <!-- Status Filter (Dropdown) -->
+      <!-- Status -->
       <div class="filter-item filter-status">
         <mat-form-field appearance="outline" class="status-field">
           <mat-label>Status</mat-label>
@@ -45,7 +44,7 @@
         </mat-form-field>
       </div>
 
-      <!-- Priority Filter -->
+      <!-- Priority-->
       <div class="filter-item filter-priority">
         <mat-form-field appearance="outline" class="priority-field">
           <mat-label>Priorität</mat-label>
@@ -85,7 +84,7 @@
         </mat-form-field>
       </div>
 
-      <!-- Quick Actions -->
+      <!-- Reset -->
       <div class="filter-item filter-actions">
         <button mat-stroked-button 
                 (click)="clearAllFilters()"
@@ -111,7 +110,7 @@
   }
 
   <!-- Todo Table -->
-  @if (!(isLoading$ | async)) {
+  @if ((isLoading$ | async) === false) {
     <div class="table-container">
     <mat-card class="table-card">
       <mat-card-content>
@@ -304,6 +303,10 @@
               [class.completed-row]="row.erledigt"
               [class.overdue-row]="isOverdue(row)"></tr>
         </table>
+
+
+        <!-- Paginator as per https://material.angular.dev/components/paginator/examples#paginator-configurable-->
+        <mat-paginator [length]="200" [pageSizeOptions]="[10, 50, 100]" aria-label="Select Page"></mat-paginator>
 
         <!-- No Data State -->
         @if (((filteredTodos$ | async)?.length || 0) === 0) {

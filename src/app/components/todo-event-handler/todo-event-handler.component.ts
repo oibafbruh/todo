@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { Subject, BehaviorSubject } from 'rxjs';
 import { Todo, Priority } from '../../models/todo.model';
 import { TodoFormDialogComponent, TodoFormData } from '../todo-form-dialog/todo-form-dialog.component';
 
@@ -17,6 +17,9 @@ export interface FilterState {
   providedIn: 'root'
 })
 export class TodoEventHandler {
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
   // Event emitters for parent components
   private createSubject = new Subject<Omit<Todo, 'id' | 'erstelltAm'>>();
   private updateSubject = new Subject<Todo>();
@@ -46,14 +49,11 @@ export class TodoEventHandler {
     sortOrder: 'desc'
   };
 
-  constructor(
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar
-  ) {}
 
   // Filter Event Handlers
-  onSearchChange(event: any): void {
-    this.currentFilter.search = event.target.value;
+  onSearchChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.currentFilter.search = target.value;
     this.filterSubject.next(this.currentFilter);
   }
 
@@ -132,7 +132,7 @@ export class TodoEventHandler {
     return !todo.erledigt && new Date(todo.endeAm) < new Date();
   }
 
-  getTruncatedDescription(description: string, maxLength: number = 50): string {
+  getTruncatedDescription(description: string, maxLength = 50): string {
     return description.length > maxLength 
       ? description.substring(0, maxLength) + '...'
       : description;
@@ -166,7 +166,7 @@ export class TodoEventHandler {
 
   clearSearch(): void {
     this.currentFilter.search = '';
-    this.onSearchChange({ target: { value: '' } });
+    this.onSearchChange({ target: { value: '' } } as unknown as Event);
   }
 
   clearAllFilters(): void {

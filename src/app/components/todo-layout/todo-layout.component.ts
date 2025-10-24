@@ -1,33 +1,86 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
-import { BehaviorSubject, Subject, Observable } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatTableModule } from '@angular/material/table';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
+import { 
+  BehaviorSubject, 
+  combineLatest, 
+  map, 
+  Subject, 
+  takeUntil, 
+  Observable, 
+  of, 
+  catchError,
+  startWith,
+  debounceTime
+} from 'rxjs';
 
 import { Todo, Priority } from '../../models/todo.model';
-import { TodoFormDialogComponent, TodoFormData } from '../todo-form-dialog/todo-form-dialog.component';
-import { FilterState } from '../../interfaces/todo-interfaces';
-import { TodoFilterService } from '../../services/todo-filter.service';
-import { TodoUtilsService } from '../../services/todo-utils.service';
-import { LAYOUT_MATERIAL_IMPORTS } from '../../shared/material-imports';
+import { TodoEventHandler, FilterState } from '../todo-event-handler/todo-event-handler.component';
+
+// FilterState interface is now imported from TodoEventHandler
 
 @Component({
   selector: 'app-todo-layout',
   standalone: true,
-  imports: LAYOUT_MATERIAL_IMPORTS,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatChipsModule,
+    MatMenuModule,
+    MatTooltipModule,
+    MatSnackBarModule,
+    MatDialogModule,
+    MatProgressSpinnerModule,
+    MatCardModule,
+    MatDividerModule,
+    MatTableModule,
+    MatCheckboxModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatPaginatorModule,
+  ],
   templateUrl: './todo-layout.component.html',
   styleUrls: ['./todo-layout.component.scss']
 })
 export class TodoLayoutComponent implements OnInit, OnDestroy {
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+  private fb = inject(FormBuilder);
+  private todoEventHandler = inject(TodoEventHandler);
+
   @Input() todos$!: Observable<Todo[]>;
   @Output() create = new EventEmitter<Omit<Todo, 'id' | 'erstelltAm'>>();
   @Output() update = new EventEmitter<Todo>();
-  @Output() delete = new EventEmitter<number>();
-  @Output() toggle = new EventEmitter<number>();
+  @Output() deleteTodo = new EventEmitter<number>();
+  @Output() toggleTodo = new EventEmitter<number>();
   todoForm!: FormGroup;
   isCreatingNew = false;
-
-  
 
   // filter und sortierungs zustand 
   currentFilter: FilterState = {
@@ -42,16 +95,8 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();                                             //Um subscriptions zu beenden
   private filterSubject = new BehaviorSubject<FilterState>(this.currentFilter);       //liefert filter zustand als stream
   filteredTodos$!: Observable<Todo[]>;                                                //liefert gefilterte todos
-  isLoading$ = new BehaviorSubject<boolean>(false);                                   //ui zustand; true = lädt, false = fertig
+  isLoading$ = new BehaviorSubject<boolean>(false);
 
-
-  constructor(
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private fb: FormBuilder,
-    private filterService: TodoFilterService,
-    private utilsService: TodoUtilsService
-  ) {}
 
   ngOnInit(): void {
     this.setupReactiveStreams();  //initial hook für streams
@@ -67,7 +112,7 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
       titel: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       priority: ['niedrig', Validators.required],
       endeAm: [oneWeekFromToday, [Validators.required, this.futureDateValidator]],
-      beschreibung: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]]
+      beschreibung: ['', []]
     });
   }
 
@@ -91,56 +136,140 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
 
   //reaktiver dataflow für gefilterte und sortierte todos
   private setupReactiveStreams(): void { 
-    this.filteredTodos$ = this.filterService.createFilteredTodosStream(
-      this.todos$,
-      this.filterSubject,
-      this.destroy$
+    this.filteredTodos$ = combineLatest([                 //kombiniert mehrere observable immer wenn neue werte geliefert werden
+      this.todos$.pipe(                                   //holt sich die todo liste
+        startWith([]),                                    //start mit empty array
+        catchError(error => {                             //error handling mit console log und snackbar
+          console.error('Error loading todos:', error);
+          this.snackBar.open('Fehler beim Laden der Todos, mehr Infos in der Konsole', 'Schließen', { duration: 3000 });
+          return of([]);                                  //return empty array bei fehler
+        })
+      ),
+      this.filterSubject.asObservable().pipe(
+        debounceTime(300)                                 //debounce für filter (speziell für suche alle 300ms)
+      )                 
+    ]).pipe(
+      map(([todos, filter]) => {                          //holt sich die todos
+        const filtered = this.applyFilters(todos, filter);  //filtert die liste
+        return this.applySorting(filtered, filter);       //sortiert die gefilterte liste
+      }),
+      takeUntil(this.destroy$)                             //beendet subscription automatisch, normal void
     );
   }
 
 
-  // Diese Methoden wurden in den TodoFilterService ausgelagert
-
-  // Filter handlers
-  onSearchChange(event: any): void {           //Suchleisten eingabe, pusht neuen filter in filterSubject
-    this.currentFilter.search = event.target.value; 
-    this.filterSubject.next(this.currentFilter); 
-  }
-  onFilterChange(): void {                     //Updated filter bei Änderungen
-    this.filterSubject.next(this.currentFilter); 
-  }
-  setStatusFilter(status: 'alle' | 'offen' | 'erledigt'): void { 
-    this.currentFilter.status = status;        //setzt status filter
-    this.onFilterChange();                     //updated liste
-  }
-  setSort(sortBy: FilterState['sortBy'], sortOrder: FilterState['sortOrder']): void { 
-    this.currentFilter.sortBy = sortBy;        //sortierfeld
-    this.currentFilter.sortOrder = sortOrder;  //sortierreiehenfolge
-    this.onFilterChange(); 
-  }
-  clearSearch(): void {                        //Sucheingabe löschen
-    this.currentFilter.search = '';            //löscht suchfeldtext
-    this.onSearchChange({ target: { value: '' } }); //triggert neue filterung nach ''
-  }
-  clearAllFilters(): void {                    //Zurücksetzen
-    this.currentFilter = this.filterService.getDefaultFilter(); //Setzt alle filter zurück
-    this.onFilterChange();                      //triggert update
-  }
-  hasActiveFilters(): boolean {                //Prüft ob suche, status oder priority filter aktiv sind
-    return this.filterService.hasActiveFilters(this.currentFilter);
+  //gibt gefiltertes array aus
+  private applyFilters(todos: Todo[], filter: FilterState): Todo[] {
+    return todos.filter(todo => {                                           //geht alle todos durch und filtert alle mit false aus
+      if (filter.search) {
+        const q = filter.search.toLowerCase();                              //suchbegriff in kleinbuchstaben
+        const matches = todo.titel.toLowerCase().includes(q) ||             //match mit q?
+                        todo.beschreibung.toLowerCase().includes(q) ||
+                        todo.id.toString().includes(q);
+        if (!matches) return false;                                         //nicht mit q? -> false
+      }
+      if (filter.status !== 'alle') {                                       //status filter
+        const isCompleted = filter.status === 'erledigt';
+        if (todo.erledigt !== isCompleted) return false;                    //todo falscher status? -> false
+      }
+      if (filter.priority !== 'alle') {                                     //priority filter
+        if (todo.priority !== filter.priority) return false;                //todo falsche prio? -> false
+      }
+      return true;                                                          //passt alles? -> true
+    });
   }
 
-  // Bearbeitungsdialog
-  openEditDialog(todo: Todo): void {          
-    const dialogRef = this.dialog.open(TodoFormDialogComponent, { width: '600px', data: { mode: 'edit', todo } as TodoFormData });      //Öffnet Dialog für Todo
-    dialogRef.afterClosed().subscribe(result => { if (result) { this.update.emit(result);                                               //Wenn geschlossen und ergebnis kommt, update event
-      this.snackBar.open('Todo aktualisiert', 'Schließen', { duration: 2000 }); } });                                                   //snackbar mit erfolgsnachricht
+  //gibt sortiertes array aus
+  private applySorting(todos: Todo[], filter: FilterState): Todo[] {
+    if(filter.search === '') //debug
+    {
+          console.log("Order: "+ filter.sortOrder + " Prio: " + filter.priority + " Suche: Leer" + " Status: " + filter.status);
+    }
+    else {
+      console.log("Order: "+ filter.sortOrder + " Prio: " + filter.priority + " Suche: " + filter.search + " Status: " + filter.status);
+    }
+    return [...todos].sort((a, b) => {                                      //kopiert todo liste und vergleicht
+      let aValue: string | number, bValue: string | number;
+      switch (filter.sortBy) {
+        case 'titel':                                                       //sortiert nach titel alphabetisch unabhängig von groß klein buchstaben
+          aValue = a.titel.toLowerCase();
+          bValue = b.titel.toLowerCase();
+          break;
+        case 'priority': {                                                  //sortiert nach priorität nach zahlen und vergleicht
+          const order = { niedrig: 1, mittel: 2, hoch: 3 } as const;
+          aValue = order[a.priority];
+          bValue = order[b.priority];
+          break;
+        }
+        case 'erstelltAm':
+        case 'endeAm':                                                      //sortiert nach date (wandelt zuerst in zahl um)
+          aValue = new Date(a[filter.sortBy]).getTime();
+          bValue = new Date(b[filter.sortBy]).getTime();
+          break;
+        default:
+          return 0;                                                         //kein sortieren, gibt todo unverändert aus
+      }
+      if (aValue < bValue) return filter.sortOrder === 'asc' ? -1 : 1;      //-1: a kommt vor b - 1: b kommt vor a, 0: reihenfolge bleibt gleich
+      if (aValue > bValue) return filter.sortOrder === 'asc' ? 1 : -1;      //asc oder desc
+      return 0;
+    });
   }
 
-  // CRUD Event Handlers
-  onUpdate(todo: Todo): void { this.update.emit(todo); }                                                                  //emit bei update
-  onDelete(id: number): void { if (confirm('Möchten Sie dieses Todo wirklich löschen?')) { this.delete.emit(id); } }      //bestätigung vom nutzer und emit bei delete
-  onToggle(id: number): void { this.toggle.emit(id); }                                                                    //toggle von status und emit
+  // Filter handlers - delegate to TodoEventHandler
+  onSearchChange(event: Event): void {
+    this.todoEventHandler.onSearchChange(event);
+    this.currentFilter = this.todoEventHandler.currentFilter;
+  }
+  
+  onFilterChange(): void {
+    this.todoEventHandler.onFilterChange();
+    this.currentFilter = this.todoEventHandler.currentFilter;
+  }
+  
+  setStatusFilter(status: 'alle' | 'offen' | 'erledigt'): void {
+    this.todoEventHandler.setStatusFilter(status);
+    this.currentFilter = this.todoEventHandler.currentFilter;
+  }
+  
+  setSort(sortBy: FilterState['sortBy'], sortOrder: FilterState['sortOrder']): void {
+    this.todoEventHandler.setSort(sortBy, sortOrder);
+    this.currentFilter = this.todoEventHandler.currentFilter;
+  }
+  
+  clearSearch(): void {
+    this.todoEventHandler.clearSearch();
+    this.currentFilter = this.todoEventHandler.currentFilter;
+  }
+  
+  clearAllFilters(): void {
+    this.todoEventHandler.clearAllFilters();
+    this.currentFilter = this.todoEventHandler.currentFilter;
+  }
+  
+  hasActiveFilters(): boolean {
+    return this.todoEventHandler.hasActiveFilters();
+  }
+
+  // Bearbeitungsdialog - delegate to TodoEventHandler
+  openEditDialog(todo: Todo): void {
+    this.todoEventHandler.openEditDialog(todo);
+  }
+
+  // CRUD Event Handlers - delegate to TodoEventHandler
+  onUpdate(todo: Todo): void {
+    this.todoEventHandler.handleUpdate(todo);
+    this.update.emit(todo);
+  }
+  
+  onDelete(id: number): void {
+    this.todoEventHandler.handleDelete(id);
+    this.deleteTodo.emit(id);
+  }
+  
+  onToggle(id: number): void {
+    this.todoEventHandler.handleToggle(id);
+    this.toggleTodo.emit(id);
+  }
 
   // Neues Todo erstellen
   startCreatingNew(): void { 
@@ -167,19 +296,20 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     });
     }
 
-  //Speichern von Todo
+  //Speichern von Todo - delegate to TodoEventHandler
   saveNewTodo(): void { 
-    if (this.todoForm.valid) {                                              //Validierungscheck
+    if (this.todoForm.valid) {
       const formValue = this.todoForm.value;
-      this.create.emit({
+      const newTodo = {
         titel: formValue.titel,
         beschreibung: formValue.beschreibung,
         priority: formValue.priority,
         endeAm: formValue.endeAm,
         erledigt: false
-      });      //create Event emit
-      this.cancelCreatingNew();                                               //Forumlar schließen
-      this.snackBar.open('Todo erstellt', 'Schließen', { duration: 2000 });   //Snackbar bestätigung
+      };
+      this.todoEventHandler.handleCreate(newTodo);
+      this.create.emit(newTodo);
+      this.cancelCreatingNew();
     } else {
       this.logValidationErrors();
       this.snackBar.open('Bitte korrigieren Sie die Eingabefehler', 'Schließen', {
@@ -199,7 +329,7 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
    * Logs detailed validation errors for debugging
    */
   private logValidationErrors(): void {
-    const errors: any = {};
+    const errors: Record<string, unknown> = {};
     
     Object.keys(this.todoForm.controls).forEach(key => {
       const control = this.todoForm.get(key);
@@ -215,13 +345,21 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  //Umwandlung priority namen
+  //Umwandlung priority namen - delegate to TodoEventHandler
   getPriorityLabel(priority: Priority): string { 
-    return this.utilsService.getPriorityLabel(priority);
+    return this.todoEventHandler.getPriorityLabel(priority);
   }
 
-  //Prüft ob Enddatum in der Vergangenheit liegt
+  //Prüft ob Enddatum in der Vergangenheit liegt - delegate to TodoEventHandler
   isOverdue(todo: Todo): boolean { 
-    return this.utilsService.isOverdue(todo);
+    return this.todoEventHandler.isOverdue(todo);
   }
 }
+
+// export class Paginator {
+//   handlePageVeent(e: PageEvent) {
+//     this.PageEvent = e;
+//     this.length = e.length;
+//     this.pageSize = e.pageSize;
+//     this.pageIndex
+//   }

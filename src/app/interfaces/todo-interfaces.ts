@@ -1,4 +1,4 @@
-import { Priority } from '../models/todo.model';
+import { Priority, Todo } from '../models/todo.model';
 
 /**
  * Einheitliches Filter-Interface für alle Todo-Komponenten
@@ -33,15 +33,15 @@ export interface TableFilter {
  */
 export interface TodoFormData {
   mode: 'create' | 'edit';
-  todo?: any;
+  todo?: Todo;
 }
 
 /**
  * Interface für Todo-Events
  */
 export interface TodoEvents {
-  create: (todo: Omit<any, 'id' | 'erstelltAm'>) => void;
-  update: (todo: any) => void;
+  create: (todo: Omit<Todo, 'id' | 'erstelltAm'>) => void;
+  update: (todo: Todo) => void;
   delete: (id: number) => void;
   toggle: (id: number) => void;
 }
