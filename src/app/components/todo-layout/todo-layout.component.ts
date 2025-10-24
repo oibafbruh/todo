@@ -1,74 +1,20 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatTableModule } from '@angular/material/table';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
-import { 
-  BehaviorSubject, 
-  combineLatest, 
-  map, 
-  Subject, 
-  takeUntil, 
-  Observable, 
-  of, 
-  catchError,
-  startWith,
-  debounceTime
-} from 'rxjs';
+import { FormBuilder, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
+import { BehaviorSubject, Subject, Observable } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 
 import { Todo, Priority } from '../../models/todo.model';
 import { TodoFormDialogComponent, TodoFormData } from '../todo-form-dialog/todo-form-dialog.component';
-
-export interface FilterState {
-  search: string;
-  status: 'alle' | 'offen' | 'erledigt';
-  priority: Priority | 'alle';
-  sortBy: 'erstelltAm' | 'endeAm' | 'priority' | 'titel';
-  sortOrder: 'asc' | 'desc';
-}
+import { FilterState } from '../../interfaces/todo-interfaces';
+import { TodoFilterService } from '../../services/todo-filter.service';
+import { TodoUtilsService } from '../../services/todo-utils.service';
+import { LAYOUT_MATERIAL_IMPORTS } from '../../shared/material-imports';
 
 @Component({
   selector: 'app-todo-layout',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatChipsModule,
-    MatMenuModule,
-    MatTooltipModule,
-    MatSnackBarModule,
-    MatDialogModule,
-    MatProgressSpinnerModule,
-    MatCardModule,
-    MatDividerModule,
-    MatTableModule,
-    MatCheckboxModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-  ],
+  imports: LAYOUT_MATERIAL_IMPORTS,
   templateUrl: './todo-layout.component.html',
   styleUrls: ['./todo-layout.component.scss']
 })
@@ -102,7 +48,9 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   constructor(
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private filterService: TodoFilterService,
+    private utilsService: TodoUtilsService
   ) {}
 
   ngOnInit(): void {
@@ -143,83 +91,15 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
 
   //reaktiver dataflow für gefilterte und sortierte todos
   private setupReactiveStreams(): void { 
-    this.filteredTodos$ = combineLatest([                 //kombiniert mehrere observable immer wenn neue werte geliefert werden
-      this.todos$.pipe(                                   //holt sich die todo liste
-        startWith([]),                                    //start mit empty array
-        catchError(error => {                             //error handling mit console log und snackbar
-          console.error('Error loading todos:', error);
-          this.snackBar.open('Fehler beim Laden der Todos, mehr Infos in der Konsole', 'Schließen', { duration: 3000 });
-          return of([]);                                  //return empty array bei fehler
-        })
-      ),
-      this.filterSubject.asObservable().pipe(
-        debounceTime(300)                                 //debounce für filter (speziell für suche alle 300ms)
-      )                 
-    ]).pipe(
-      map(([todos, filter]) => {                          //holt sich die todos
-        let filtered = this.applyFilters(todos, filter);  //filtert die liste
-        return this.applySorting(filtered, filter);       //sortiert die gefilterte liste
-      }),
-      takeUntil(this.destroy$)                             //beendet subscription automatisch, normal void
+    this.filteredTodos$ = this.filterService.createFilteredTodosStream(
+      this.todos$,
+      this.filterSubject,
+      this.destroy$
     );
   }
 
 
-  //gibt gefiltertes array aus
-  private applyFilters(todos: Todo[], filter: FilterState): Todo[] {
-    return todos.filter(todo => {                                           //geht alle todos durch und filtert alle mit false aus
-      if (filter.search) {
-        const q = filter.search.toLowerCase();                              //suchbegriff in kleinbuchstaben
-        const matches = todo.titel.toLowerCase().includes(q) ||             //match mit q?
-                        todo.beschreibung.toLowerCase().includes(q) ||
-                        todo.id.toString().includes(q);
-        if (!matches) return false;                                         //nicht mit q? -> false
-      }
-      if (filter.status !== 'alle') {                                       //status filter
-        const isCompleted = filter.status === 'erledigt';
-        if (todo.erledigt !== isCompleted) return false;                    //todo falscher status? -> false
-      }
-      if (filter.priority !== 'alle') {                                     //priority filter
-        if (todo.priority !== filter.priority) return false;                //todo falsche prio? -> false
-      }
-      return true;                                                          //passt alles? -> true
-    });
-  }
-
-  //gibt sortiertes array aus
-  private applySorting(todos: Todo[], filter: FilterState): Todo[] {
-    if(filter.search === '') //debug
-    {
-          console.log("Order: "+ filter.sortOrder + " Prio: " + filter.priority + " Suche: Leer" + " Status: " + filter.status);
-    }
-    else {
-      console.log("Order: "+ filter.sortOrder + " Prio: " + filter.priority + " Suche: " + filter.search + " Status: " + filter.status);
-    }
-    return [...todos].sort((a, b) => {                                      //kopiert todo liste und vergleicht
-      let aValue: any, bValue: any;
-      switch (filter.sortBy) {
-        case 'titel':                                                       //sortiert nach titel alphabetisch unabhängig von groß klein buchstaben
-          aValue = a.titel.toLowerCase();
-          bValue = b.titel.toLowerCase();
-          break;
-        case 'priority':                                                    //sortiert nach priorität nach zahlen und vergleicht
-          const order = { niedrig: 1, mittel: 2, hoch: 3 } as const;
-          aValue = order[a.priority];
-          bValue = order[b.priority];
-          break;
-        case 'erstelltAm':
-        case 'endeAm':                                                      //sortiert nach date (wandelt zuerst in zahl um)
-          aValue = new Date(a[filter.sortBy]).getTime();
-          bValue = new Date(b[filter.sortBy]).getTime();
-          break;
-        default:
-          return 0;                                                         //kein sortieren, gibt todo unverändert aus
-      }
-      if (aValue < bValue) return filter.sortOrder === 'asc' ? -1 : 1;      //-1: a kommt vor b - 1: b kommt vor a, 0: reihenfolge bleibt gleich
-      if (aValue > bValue) return filter.sortOrder === 'asc' ? 1 : -1;      //asc oder desc
-      return 0;
-    });
-  }
+  // Diese Methoden wurden in den TodoFilterService ausgelagert
 
   // Filter handlers
   onSearchChange(event: any): void {           //Suchleisten eingabe, pusht neuen filter in filterSubject
@@ -243,13 +123,11 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     this.onSearchChange({ target: { value: '' } }); //triggert neue filterung nach ''
   }
   clearAllFilters(): void {                    //Zurücksetzen
-    this.currentFilter = { search: '', status: 'alle', priority: 'alle', sortBy: 'erstelltAm', sortOrder: 'desc' }; //Setzt alle filter zurück
+    this.currentFilter = this.filterService.getDefaultFilter(); //Setzt alle filter zurück
     this.onFilterChange();                      //triggert update
   }
   hasActiveFilters(): boolean {                //Prüft ob suche, status oder priority filter aktiv sind
-    return this.currentFilter.search !== '' || 
-    this.currentFilter.status !== 'alle' || 
-    this.currentFilter.priority !== 'alle'; 
+    return this.filterService.hasActiveFilters(this.currentFilter);
   }
 
   // Bearbeitungsdialog
@@ -339,15 +217,11 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
 
   //Umwandlung priority namen
   getPriorityLabel(priority: Priority): string { 
-    const labels = { 
-      niedrig: 'Niedrig', mittel: 'Mittel', hoch: 'Hoch' 
-    }; 
-    return labels[priority]; 
+    return this.utilsService.getPriorityLabel(priority);
   }
 
   //Prüft ob Enddatum in der Vergangenheit liegt
   isOverdue(todo: Todo): boolean { 
-    return !todo.erledigt &&              //Todo erledigt?
-    new Date(todo.endeAm) < new Date();   //Datum in der Vergangenheit?
+    return this.utilsService.isOverdue(todo);
   }
 }
