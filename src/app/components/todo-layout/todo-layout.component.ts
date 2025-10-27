@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,7 +18,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginatorIntl, MatPaginator } from '@angular/material/paginator';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { 
   BehaviorSubject, 
@@ -38,6 +38,11 @@ import { TodoService } from '../../services/todo.service';
 import { TodoEditComponent } from '../todo-edit/todo-edit.component';
 import { TodoUtilsService } from '../../services/todo-utils.service';
 
+export class CustomPaginatorIntl extends MatPaginatorIntl {
+  override itemsPerPageLabel = 'Aufgaben pro Seite:';
+  override nextPageLabel = 'Nächste Seite';
+  override previousPageLabel = 'Vorherige Seite'
+}
 
 @Component({
   selector: 'app-todo-layout',
@@ -66,15 +71,22 @@ import { TodoUtilsService } from '../../services/todo-utils.service';
     MatNativeDateModule,
     MatPaginatorModule,
   ],
+  providers: [
+    { provide: MatPaginatorIntl, useClass: CustomPaginatorIntl }
+  ],
   templateUrl: './todo-layout.component.html',
   styleUrls: ['./todo-layout.component.scss']
 })
-export class TodoLayoutComponent implements OnInit, OnDestroy {
+export class TodoLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild(MatPaginator) pagintor!: MatPaginator;
+
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
   private todoService = inject(TodoService);
   private utilsService = inject(TodoUtilsService);
+
+  constructor(private paginatorIntl: MatPaginatorIntl) {}
 
   todos$ = this.todoService.getTodos();  // Direct service access
   todoForm!: FormGroup;
@@ -100,7 +112,9 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     this.setupReactiveStreams();  //initial hook für streams
     this.initForm();
   }
-
+  ngAfterViewInit(): 
+  void {}
+  
   initForm() {
     // Datum = heute + 1 Woche
     const oneWeekFromToday = new Date();
@@ -118,6 +132,9 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     this.destroy$.next();         //
     this.destroy$.complete();     //beendet das subject
   }
+
+  
+
 
   //reaktiver dataflow für gefilterte und sortierte todos, emittiert sobald sich was ändert
   private setupReactiveStreams(): void { 

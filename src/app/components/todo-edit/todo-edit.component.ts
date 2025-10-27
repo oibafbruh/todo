@@ -67,13 +67,13 @@ export class TodoEditComponent implements OnInit {
       ]],
       priority: ['', [Validators.required]],
       endeAm: ['', [
-        Validators.required,
-        this.utilsService.futureDateValidator
+        //Daniel Fragen!
+        // Validators.required,   
+        // this.utilsService.futureDateValidator
       ]]
     });
   }
-
-  //datum muss in zukunft liegen
+  //validator für datum muss in zukunft liegen
 
 
   private populateForm(todo: Todo): void {

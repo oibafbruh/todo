@@ -3,7 +3,7 @@
   <mat-toolbar class="modern-toolbar" color="primary">
     <div class="toolbar-content">
       <div class="toolbar-left">
-        <span class="toolbar-title headline-medium">Angular Todo App</span>
+        <span class="toolbar-title headline-medium">Angular RxJS Todo App</span>
       </div>
     </div>
   </mat-toolbar>
@@ -94,7 +94,7 @@
           Zurücksetzen
         </button>
         
-        <span class="results-count body-medium">
+        <span class="counter">
           {{ (filteredTodos$ | async)?.length || 0 }} / {{ (todos$ | async)?.length || 0 }}
         </span>
       </div>
@@ -306,7 +306,11 @@
 
 
         <!-- Paginator as per https://material.angular.dev/components/paginator/examples#paginator-configurable-->
-        <mat-paginator [length]="200" [pageSizeOptions]="[10, 50, 100]" aria-label="Select Page"></mat-paginator>
+      <mat-paginator 
+        [length]="(todos$ | async)?.length || 0" 
+        [pageSizeOptions]="[10, 20, 50]" 
+        aria-label="Select Page">
+      </mat-paginator>
 
         <!-- No Data State -->
         @if (((filteredTodos$ | async)?.length || 0) === 0) {
