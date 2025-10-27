@@ -10,12 +10,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
-import { Todo } from '../../models/todo.model';
+import { Todo, TodoFormData } from '../../models/todo.model';
+import { TodoUtilsService } from '../../services/todo-utils.service';
 
-export interface TodoFormData {
-  todo?: Todo;
-  mode: 'create' | 'edit';
-}
 
 @Component({
   selector: 'app-todo-form-dialog',
@@ -33,20 +30,27 @@ export interface TodoFormData {
     MatSnackBarModule
 ],
   providers: [provideNativeDateAdapter()],
-  templateUrl: `./todo-form-dialog.component.html`,
-  styleUrls: [`./todo-form-dialog.component.css`]
+  templateUrl: `./todo-edit.component.html`,
+  styleUrls: [`./todo-edit.component.css`]
 })
-export class TodoFormDialogComponent implements OnInit {
+export class TodoEditComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private dialogRef = inject<MatDialogRef<TodoFormDialogComponent>>(MatDialogRef);
+  private dialogRef = inject<MatDialogRef<TodoEditComponent>>(MatDialogRef);
   data = inject<TodoFormData>(MAT_DIALOG_DATA);
   private snackBar = inject(MatSnackBar);
+  private utilsService = inject(TodoUtilsService);
 
-  todoForm: FormGroup = this.createForm();
+  todoForm!: FormGroup;
 
   ngOnInit(): void {
+    console.log('ng init data:', this.data);
+    this.todoForm = this.createForm();
     if (this.data.mode === 'edit' && this.data.todo) {
-      this.populateForm(this.data.todo);
+      console.log('populating data:', this.data.todo);
+      // Use setTimeout to ensure form is fully initialized
+      setTimeout(() => {
+        this.populateForm(this.data.todo!);
+      }, 0);
     }
   }
 
@@ -59,28 +63,17 @@ export class TodoFormDialogComponent implements OnInit {
         Validators.maxLength(100)
       ]],
       beschreibung: ['', [
-        Validators.required,
-        Validators.minLength(10),
         Validators.maxLength(500)
       ]],
       priority: ['', [Validators.required]],
       endeAm: ['', [
         Validators.required,
-        this.futureDateValidator
+        this.utilsService.futureDateValidator
       ]]
     });
   }
 
   //validadator für datum muss in zukunft liegen
-  private futureDateValidator(control: AbstractControl) {
-    if (!control.value) return null;
-    
-    const selectedDate = new Date(control.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    return selectedDate >= today ? null : { futureDate: true };
-  }
 
 
   private populateForm(todo: Todo): void {
@@ -89,12 +82,16 @@ export class TodoFormDialogComponent implements OnInit {
       ? todo.endeAm 
       : new Date(todo.endeAm);
 
-    this.todoForm.patchValue({
+    const formData = {
       titel: todo.titel,
       beschreibung: todo.beschreibung,
       priority: todo.priority,
       endeAm: endeAmDate
-    });
+    };
+    
+    console.log('form values:', formData);
+    this.todoForm.patchValue(formData);
+    console.log('fform values after patch:', this.todoForm.value);
   }
 
   //form submission und validation
@@ -102,7 +99,7 @@ export class TodoFormDialogComponent implements OnInit {
     if (this.todoForm.valid) {
       const formValue = this.todoForm.value;
       
-      console.log('Todo form submitted successfully:', {
+      console.log('erfolgreich gespeichert:', {
         mode: this.data.mode,
         formData: formValue,
         timestamp: new Date().toISOString()
@@ -114,7 +111,7 @@ export class TodoFormDialogComponent implements OnInit {
       });
     } else {
       this.logValidationErrors();
-      this.snackBar.open('Bitte korrigieren Sie die Eingabefehler', 'Schließen', {
+      this.snackBar.open('Bitte Eingabefehler korrigieren.', 'Schließen', {
         duration: 3000,
         horizontalPosition: 'right',
         verticalPosition: 'top'
@@ -132,7 +129,7 @@ export class TodoFormDialogComponent implements OnInit {
       }
     });
 
-    console.error('Todo form validation errors:', {
+    console.error('validation errors:', {
       errors,
       formValue: this.todoForm.value,
       timestamp: new Date().toISOString()
@@ -140,7 +137,7 @@ export class TodoFormDialogComponent implements OnInit {
   }
 
   onCancel(): void {
-    console.log('Todo form dialog cancelled');
+    console.log('dialog cancelled');
     this.dialogRef.close();
   }
 }

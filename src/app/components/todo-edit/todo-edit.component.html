@@ -45,12 +45,6 @@
         </textarea>
         <mat-icon matSuffix>description</mat-icon>
 
-        @if (todoForm.get('beschreibung')?.hasError('required')) {
-          <mat-error>Beschreibung ist erforderlich</mat-error>
-        }
-        @if (todoForm.get('beschreibung')?.hasError('minlength')) {
-          <mat-error>Mindestens 10 Zeichen</mat-error>
-        }
         @if (todoForm.get('beschreibung')?.hasError('maxlength')) {
           <mat-error>Maximal 500 Zeichen</mat-error>
         }
@@ -58,7 +52,7 @@
 
       <!-- Priorität -->
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Priorität<td></td></mat-label>
+        <mat-label>Priorität</mat-label>
         <mat-select formControlName="priority">
           <mat-option value="niedrig">
             <span class="priority-option niedrig">Niedrig</span>

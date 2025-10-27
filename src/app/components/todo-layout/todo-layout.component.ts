@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -33,17 +33,11 @@ import {
   debounceTime
 } from 'rxjs';
 
-import { Todo, Priority } from '../../models/todo.model';
+import { Todo, Priority, FilterState, TodoFormData } from '../../models/todo.model';
 import { TodoService } from '../../services/todo.service';
+import { TodoEditComponent } from '../todo-edit/todo-edit.component';
+import { TodoUtilsService } from '../../services/todo-utils.service';
 
-// FilterState interface
-export interface FilterState {
-  search: string;
-  status: 'alle' | 'offen' | 'erledigt';
-  priority: Priority | 'alle';
-  sortBy: 'erstelltAm' | 'endeAm' | 'priority' | 'titel';
-  sortOrder: 'asc' | 'desc';
-}
 
 @Component({
   selector: 'app-todo-layout',
@@ -80,6 +74,7 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
   private todoService = inject(TodoService);
+  private utilsService = inject(TodoUtilsService);
 
   todos$ = this.todoService.getTodos();  // Direct service access
   todoForm!: FormGroup;
@@ -114,20 +109,9 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     this.todoForm = this.fb.group({
       titel: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       priority: ['niedrig', Validators.required],
-      endeAm: [oneWeekFromToday, [Validators.required, this.futureDateValidator]],
+      endeAm: [oneWeekFromToday, [Validators.required, this.utilsService.futureDateValidator]],
       beschreibung: ['', []]
     });
-  }
-
-  //Datum muss in der Zukunft sein
-  private futureDateValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
-    if (!control.value) return null;
-    
-    const selectedDate = new Date(control.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    return selectedDate >= today ? null : { futureDate: true };
   }
 
   ngOnDestroy(): void {           //hook wenn komponente zerstört wird, memory leaks verhindern
@@ -261,10 +245,38 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
            this.currentFilter.priority !== 'alle';
   }
 
+  // Store the current todo being edited
+  private currentEditingTodo: Todo | null = null;
+
   // Bearbeitungsdialog
   openEditDialog(todo: Todo): void {
-    // TODO: Implement edit dialog
-    this.snackBar.open('Edit funktion kommt bald', 'Schließen', { duration: 2000 });
+    //console.log('openEditDialog called with todo:', todo);
+    this.currentEditingTodo = todo;
+    
+    const dialogData = {
+      todo: todo,
+      mode: 'edit'
+    } as TodoFormData;
+    console.log('form data:', dialogData);
+    
+    const dialogRef = this.dialog.open(TodoEditComponent, {
+      width: '600px',
+      data: dialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.currentEditingTodo) {
+        this.todoService.updateTodo(
+          this.currentEditingTodo.id,
+          result.titel.trim(),
+          result.beschreibung.trim(),
+          result.priority,
+          result.endeAm
+        );
+        this.snackBar.open('Todo erfolgreich aktualisiert', 'Schließen', { duration: 2000 });
+      }
+      this.currentEditingTodo = null;
+    });
   }
 
   // event Handler call
@@ -315,13 +327,6 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   saveNewTodo(): void { 
     if (this.todoForm.valid) {
       const formValue = this.todoForm.value;
-      const newTodo = {
-        titel: formValue.titel,
-        beschreibung: formValue.beschreibung,
-        priority: formValue.priority,
-        endeAm: formValue.endeAm,
-        erledigt: false
-      };
       this.todoService.addTodo(
         formValue.titel.trim(),
         formValue.beschreibung.trim(),

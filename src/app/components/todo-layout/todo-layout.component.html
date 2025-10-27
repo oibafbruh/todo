@@ -281,14 +281,14 @@
           <!-- Actions Column -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Aktionen</th>
-            <td mat-cell *matCellDef="let todo">
+            <td mat-cell *matCellDef="let todo; let i = index">
               <button mat-icon-button [matMenuTriggerFor]="actionMenu" matTooltip="Aktionen">
                 <mat-icon>more_vert</mat-icon>
               </button>
               <mat-menu #actionMenu="matMenu">
                 <button mat-menu-item (click)="openEditDialog(todo)">
                   <mat-icon>edit</mat-icon>
-                  <span>Bearbeiten</span>
+                  <span>Bearbeiten (ID: {{todo?.id}})</span>
                 </button>
                 <button mat-menu-item (click)="onDelete(todo.id)">
                   <mat-icon>delete</mat-icon>
