@@ -73,7 +73,7 @@ export class TodoEditComponent implements OnInit {
     });
   }
 
-  //validadator für datum muss in zukunft liegen
+  //datum muss in zukunft liegen
 
 
   private populateForm(todo: Todo): void {

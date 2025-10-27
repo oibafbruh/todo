@@ -1,11 +1,9 @@
-/* App component specific styles - Google-inspired minimalistic design */
 
 .app-container {
   min-height: 100vh;
   background: #fafafa;
 }
 
-/* Global Material Design enhancements */
 .mat-mdc-card {
   border-radius: 8px !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24) !important;
@@ -32,7 +30,6 @@
   }
 }
 
-/* Typography enhancements */
 .headline-medium {
   font-size: 22px;
   font-weight: 400;
@@ -65,7 +62,6 @@
   color: #5f6368;
 }
 
-/* Footer styling */
 footer {
   background: #fff;
   border-top: 1px solid #dadce0;
@@ -90,7 +86,6 @@ footer a:hover {
   text-decoration: underline;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .app-container {
     min-height: 100vh;

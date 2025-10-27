@@ -28,9 +28,6 @@ export class TodoUtilsService {
     return labels[priority];
   }
 
-  /**
-   * Log form validation errors to console
-   */
   logValidationErrors(form: any, context: string = 'Form'): void {
     const errors: Record<string, unknown> = {};
     
@@ -44,7 +41,6 @@ export class TodoUtilsService {
     console.error(`${context} validation errors:`, {
       errors,
       formValue: form.value,
-      timestamp: new Date().toISOString()
     });
   }
 }

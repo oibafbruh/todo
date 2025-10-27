@@ -245,7 +245,7 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
            this.currentFilter.priority !== 'alle';
   }
 
-  // Store the current todo being edited
+  // speichert bearbeitetes todo
   private currentEditingTodo: Todo | null = null;
 
   // Bearbeitungsdialog
