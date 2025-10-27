@@ -1,12 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
-
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
@@ -33,6 +32,7 @@ export interface TodoFormData {
     MatIconModule,
     MatSnackBarModule
 ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: `./todo-form-dialog.component.html`,
   styleUrls: [`./todo-form-dialog.component.css`]
 })
@@ -50,9 +50,7 @@ export class TodoFormDialogComponent implements OnInit {
     }
   }
 
-  /**
-   * Creates the reactive form with validation rules
-   */
+  //neues reactive form mit validatoren
   private createForm(): FormGroup {
     return this.fb.group({
       titel: ['', [
@@ -73,9 +71,7 @@ export class TodoFormDialogComponent implements OnInit {
     });
   }
 
-  /**
-   * Custom validator to ensure due date is in the future
-   */
+  //validadator für datum muss in zukunft liegen
   private futureDateValidator(control: AbstractControl) {
     if (!control.value) return null;
     
@@ -86,26 +82,26 @@ export class TodoFormDialogComponent implements OnInit {
     return selectedDate >= today ? null : { futureDate: true };
   }
 
-  /**
-   * Populates the form with existing todo data for editing
-   */
+
   private populateForm(todo: Todo): void {
+    // chatgpt hilfe
+    const endeAmDate = todo.endeAm instanceof Date 
+      ? todo.endeAm 
+      : new Date(todo.endeAm);
+
     this.todoForm.patchValue({
       titel: todo.titel,
       beschreibung: todo.beschreibung,
       priority: todo.priority,
-      endeAm: todo.endeAm
+      endeAm: endeAmDate
     });
   }
 
-  /**
-   * Handles form submission and validation
-   */
+  //form submission und validation
   onSave(): void {
     if (this.todoForm.valid) {
       const formValue = this.todoForm.value;
       
-      // Log successful form submission
       console.log('Todo form submitted successfully:', {
         mode: this.data.mode,
         formData: formValue,
@@ -126,9 +122,6 @@ export class TodoFormDialogComponent implements OnInit {
     }
   }
 
-  /**
-   * Logs detailed validation errors for debugging
-   */
   private logValidationErrors(): void {
     const errors: Record<string, unknown> = {};
     
@@ -146,9 +139,6 @@ export class TodoFormDialogComponent implements OnInit {
     });
   }
 
-  /**
-   * Handles dialog cancellation
-   */
   onCancel(): void {
     console.log('Todo form dialog cancelled');
     this.dialogRef.close();

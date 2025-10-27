@@ -34,9 +34,16 @@ import {
 } from 'rxjs';
 
 import { Todo, Priority } from '../../models/todo.model';
-import { TodoEventHandler, FilterState } from '../todo-event-handler/todo-event-handler.component';
+import { TodoService } from '../../services/todo.service';
 
-// FilterState interface is now imported from TodoEventHandler
+// FilterState interface
+export interface FilterState {
+  search: string;
+  status: 'alle' | 'offen' | 'erledigt';
+  priority: Priority | 'alle';
+  sortBy: 'erstelltAm' | 'endeAm' | 'priority' | 'titel';
+  sortOrder: 'asc' | 'desc';
+}
 
 @Component({
   selector: 'app-todo-layout',
@@ -72,13 +79,9 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
-  private todoEventHandler = inject(TodoEventHandler);
+  private todoService = inject(TodoService);
 
-  @Input() todos$!: Observable<Todo[]>;
-  @Output() create = new EventEmitter<Omit<Todo, 'id' | 'erstelltAm'>>();
-  @Output() update = new EventEmitter<Todo>();
-  @Output() deleteTodo = new EventEmitter<number>();
-  @Output() toggleTodo = new EventEmitter<number>();
+  todos$ = this.todoService.getTodos();  // Direct service access
   todoForm!: FormGroup;
   isCreatingNew = false;
 
@@ -104,7 +107,7 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
   }
 
   initForm() {
-    // Set default date to one week from today
+    // Datum = heute + 1 Woche
     const oneWeekFromToday = new Date();
     oneWeekFromToday.setDate(oneWeekFromToday.getDate() + 7);
     
@@ -116,9 +119,7 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Custom validator to ensure due date is in the future
-   */
+  //Datum muss in der Zukunft sein
   private futureDateValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
     if (!control.value) return null;
     
@@ -134,7 +135,7 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     this.destroy$.complete();     //beendet das subject
   }
 
-  //reaktiver dataflow für gefilterte und sortierte todos
+  //reaktiver dataflow für gefilterte und sortierte todos, emittiert sobald sich was ändert
   private setupReactiveStreams(): void { 
     this.filteredTodos$ = combineLatest([                 //kombiniert mehrere observable immer wenn neue werte geliefert werden
       this.todos$.pipe(                                   //holt sich die todo liste
@@ -215,66 +216,80 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Filter handlers - delegate to TodoEventHandler
+  // Filter handlers
   onSearchChange(event: Event): void {
-    this.todoEventHandler.onSearchChange(event);
-    this.currentFilter = this.todoEventHandler.currentFilter;
+    const target = event.target as HTMLInputElement;
+    this.currentFilter.search = target.value;
+    this.filterSubject.next(this.currentFilter);
   }
   
   onFilterChange(): void {
-    this.todoEventHandler.onFilterChange();
-    this.currentFilter = this.todoEventHandler.currentFilter;
+    this.filterSubject.next(this.currentFilter);
   }
   
   setStatusFilter(status: 'alle' | 'offen' | 'erledigt'): void {
-    this.todoEventHandler.setStatusFilter(status);
-    this.currentFilter = this.todoEventHandler.currentFilter;
+    this.currentFilter.status = status;
+    this.onFilterChange();
   }
   
   setSort(sortBy: FilterState['sortBy'], sortOrder: FilterState['sortOrder']): void {
-    this.todoEventHandler.setSort(sortBy, sortOrder);
-    this.currentFilter = this.todoEventHandler.currentFilter;
+    this.currentFilter.sortBy = sortBy;
+    this.currentFilter.sortOrder = sortOrder;
+    this.onFilterChange();
   }
   
   clearSearch(): void {
-    this.todoEventHandler.clearSearch();
-    this.currentFilter = this.todoEventHandler.currentFilter;
+    this.currentFilter.search = '';
+    this.onSearchChange({ target: { value: '' } } as unknown as Event);
   }
   
   clearAllFilters(): void {
-    this.todoEventHandler.clearAllFilters();
-    this.currentFilter = this.todoEventHandler.currentFilter;
+    this.currentFilter = { 
+      search: '', 
+      status: 'alle', 
+      priority: 'alle', 
+      sortBy: 'erstelltAm', 
+      sortOrder: 'desc' 
+    };
+    this.onFilterChange();
+    this.snackBar.open('Alle Filter wurden zurückgesetzt', 'Schließen', { duration: 2000 });
   }
   
   hasActiveFilters(): boolean {
-    return this.todoEventHandler.hasActiveFilters();
+    return this.currentFilter.search !== '' || 
+           this.currentFilter.status !== 'alle' || 
+           this.currentFilter.priority !== 'alle';
   }
 
-  // Bearbeitungsdialog - delegate to TodoEventHandler
+  // Bearbeitungsdialog
   openEditDialog(todo: Todo): void {
-    this.todoEventHandler.openEditDialog(todo);
+    // TODO: Implement edit dialog
+    this.snackBar.open('Edit funktion kommt bald', 'Schließen', { duration: 2000 });
   }
 
-  // CRUD Event Handlers - delegate to TodoEventHandler
+  // event Handler call
   onUpdate(todo: Todo): void {
-    this.todoEventHandler.handleUpdate(todo);
-    this.update.emit(todo);
+    this.todoService.updateTodo(
+      todo.id,
+      todo.titel.trim(),
+      todo.beschreibung.trim(),
+      todo.priority,
+      todo.endeAm
+    );
   }
   
   onDelete(id: number): void {
-    this.todoEventHandler.handleDelete(id);
-    this.deleteTodo.emit(id);
+    this.todoService.deleteTodo(id);
   }
   
   onToggle(id: number): void {
-    this.todoEventHandler.handleToggle(id);
-    this.toggleTodo.emit(id);
+    this.todoService.toggleErledigt(id);
   }
 
   // Neues Todo erstellen
   startCreatingNew(): void { 
     this.isCreatingNew = true; 
-    // Set default date to one week from today
+    // Datum = heute + 1 Woche
     const oneWeekFromToday = new Date();
     oneWeekFromToday.setDate(oneWeekFromToday.getDate() + 7);
     
@@ -307,12 +322,17 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
         endeAm: formValue.endeAm,
         erledigt: false
       };
-      this.todoEventHandler.handleCreate(newTodo);
-      this.create.emit(newTodo);
+      this.todoService.addTodo(
+        formValue.titel.trim(),
+        formValue.beschreibung.trim(),
+        formValue.priority,
+        formValue.endeAm
+      );
       this.cancelCreatingNew();
+      this.snackBar.open('Todo erfolgreich erstellt', 'Schließen', { duration: 2000 });
     } else {
       this.logValidationErrors();
-      this.snackBar.open('Bitte korrigieren Sie die Eingabefehler', 'Schließen', {
+      this.snackBar.open('Bitte korrigiere die Eingabefehler', 'Schließen', {
         duration: 3000,
         horizontalPosition: 'right',
         verticalPosition: 'top'
@@ -325,9 +345,7 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     return this.todoForm.valid;
   }
 
-  /**
-   * Logs detailed validation errors for debugging
-   */
+  //Gibt validierungsfehler aus
   private logValidationErrors(): void {
     const errors: Record<string, unknown> = {};
     
@@ -345,14 +363,19 @@ export class TodoLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  //Umwandlung priority namen - delegate to TodoEventHandler
-  getPriorityLabel(priority: Priority): string { 
-    return this.todoEventHandler.getPriorityLabel(priority);
+  //Umwandlung priority namen
+  getPriorityLabel(priority: Priority): string {
+    const labels = {
+      niedrig: 'Niedrig',
+      mittel: 'Mittel',
+      hoch: 'Hoch'
+    };
+    return labels[priority];
   }
 
-  //Prüft ob Enddatum in der Vergangenheit liegt - delegate to TodoEventHandler
-  isOverdue(todo: Todo): boolean { 
-    return this.todoEventHandler.isOverdue(todo);
+  //Prüft ob Enddatum in der Vergangenheit liegt
+  isOverdue(todo: Todo): boolean {
+    return !todo.erledigt && new Date(todo.endeAm) < new Date();
   }
 }
 

@@ -20,7 +20,7 @@ export class TodoEventHandler {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  // Event emitters for parent components
+  // event emitters für andere components 
   private createSubject = new Subject<Omit<Todo, 'id' | 'erstelltAm'>>();
   private updateSubject = new Subject<Todo>();
   private deleteSubject = new Subject<number>();
@@ -33,14 +33,14 @@ export class TodoEventHandler {
     sortOrder: 'desc'
   });
 
-  // Public observables for components to subscribe to
+  // observables für andere components
   public create$ = this.createSubject.asObservable();
   public update$ = this.updateSubject.asObservable();
   public delete$ = this.deleteSubject.asObservable();
   public toggle$ = this.toggleSubject.asObservable();
   public filter$ = this.filterSubject.asObservable();
 
-  // Current filter state
+  // Current filter zustand
   public currentFilter: FilterState = {
     search: '',
     status: 'alle',
@@ -48,7 +48,6 @@ export class TodoEventHandler {
     sortBy: 'erstelltAm',
     sortOrder: 'desc'
   };
-
 
   // Filter Event Handlers
   onSearchChange(event: Event): void {
@@ -110,7 +109,6 @@ export class TodoEventHandler {
     }
   }
 
-  // Direct CRUD methods for simple operations
   handleCreate(todoData: Omit<Todo, 'id' | 'erstelltAm'>): void {
     this.createSubject.next(todoData);
   }
