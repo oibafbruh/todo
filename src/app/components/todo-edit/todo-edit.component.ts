@@ -73,6 +73,7 @@ export class TodoEditComponent implements OnInit {
       ]]
     });
   }
+
   //validator für datum muss in zukunft liegen
 
 
@@ -91,7 +92,7 @@ export class TodoEditComponent implements OnInit {
     
     console.log('form values:', formData);
     this.todoForm.patchValue(formData);
-    console.log('fform values after patch:', this.todoForm.value);
+    console.log('form values afterr patch:', this.todoForm.value);
   }
 
   //form submission und validation

@@ -10,7 +10,7 @@ export interface Todo {
   endeAm: Date;
 }
 
-// Filter and UI interfaces
+// Filter und  interfaces
 export interface FilterState {
   search: string;
   status: 'alle' | 'offen' | 'erledigt';
