@@ -112,6 +112,7 @@ export class TodoLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
     this.setupReactiveStreams();  //initial hook für streams
     this.initForm();
   }
+
   ngAfterViewInit(): 
   void {}
   
