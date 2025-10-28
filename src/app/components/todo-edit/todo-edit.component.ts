@@ -68,8 +68,8 @@ export class TodoEditComponent implements OnInit {
       priority: ['', [Validators.required]],
       endeAm: ['', [
         //Daniel Fragen!
-        // Validators.required,   
-        // this.utilsService.futureDateValidator
+        Validators.required,   
+        this.utilsService.futureDateValidator
       ]]
     });
   }

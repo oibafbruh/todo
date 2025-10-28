@@ -38,11 +38,7 @@ import { TodoService } from '../../services/todo.service';
 import { TodoEditComponent } from '../todo-edit/todo-edit.component';
 import { TodoUtilsService } from '../../services/todo-utils.service';
 
-export class CustomPaginatorIntl extends MatPaginatorIntl {
-  override itemsPerPageLabel = 'Aufgaben pro Seite:';
-  override nextPageLabel = 'Nächste Seite';
-  override previousPageLabel = 'Vorherige Seite'
-}
+
 
 @Component({
   selector: 'app-todo-layout',
@@ -70,9 +66,6 @@ export class CustomPaginatorIntl extends MatPaginatorIntl {
     MatDatepickerModule,
     MatNativeDateModule,
     MatPaginatorModule,
-  ],
-  providers: [
-    { provide: MatPaginatorIntl, useClass: CustomPaginatorIntl }
   ],
   templateUrl: './todo-layout.component.html',
   styleUrls: ['./todo-layout.component.scss']
@@ -135,8 +128,6 @@ export class TodoLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   
-
-
   //reaktiver dataflow für gefilterte und sortierte todos, emittiert sobald sich was ändert
   private setupReactiveStreams(): void { 
     this.filteredTodos$ = combineLatest([                 //kombiniert mehrere observable immer wenn neue werte geliefert werden
